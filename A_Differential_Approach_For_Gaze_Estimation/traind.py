@@ -4,7 +4,7 @@ import sys
 import yaml
 import argparse
 import torch
-import reader
+import A_Differential_Approach_For_Gaze_Estimation.dataloader.reader as reader
 import model
 import torch.nn as nn
 import torch.optim as optim

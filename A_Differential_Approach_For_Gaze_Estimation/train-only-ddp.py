@@ -4,7 +4,7 @@ import torch.distributed as dist
 import torch.nn as nn
 
 import yaml
-import d_reader as reader
+import A_Differential_Approach_For_Gaze_Estimation.dataloader.d_reader as reader
 import os
 import time
 import sys

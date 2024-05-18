@@ -7,14 +7,18 @@ import cv2
 import random
 
 
+'''
+将原始格式标签转换为diff模型可使用的标签
 
-label_path = "/data300m2/output/gazecapture/Label/test"
+'''
 
-output_path = "/data300m2/output/gazecapture/Label_dif/test"
+
+label_path = "/data/4_gc/2_gcout/Label/test"
+output_path = "/data/4_gc/2_gcout/Label_Diff/test"
 
 file_list = os.listdir(label_path)
 
-print(file_list  )
+print(file_list)
 
 for item in file_list:
     label_path1 = os.path.join(label_path,item)
@@ -49,8 +53,8 @@ for item in file_list:
         lefteye2 = fl2[1]
         righteye2 = fl2[2]
 
-        rec1 = str(lefteye1) + " " + str(lefteye2) + " " + ",".join([str(point2[0] - point1[0]),str(point2[1] - point1[1])]) + "\n"
-        rec2 = str(righteye1) + " " + str(righteye2) + " " + ",".join([str(point2[0] - point1[0]),str(point2[1] - point1[1])]) + "\n"
+        rec1 = str(lefteye1) + " " + str(lefteye2) + " " + ",".join([str(point2[0] - point1[0]),str(point2[1] - point1[1])]) + " l" + "\n"
+        rec2 = str(righteye1) + " " + str(righteye2) + " " + ",".join([str(point2[0] - point1[0]),str(point2[1] - point1[1])]) + " r" + "\n"
         result.append(rec1)
         result.append(rec2)
         f1 = f1 + 1
@@ -59,6 +63,7 @@ for item in file_list:
     output_path1 = os.path.join(output_path,item)
     with open(output_path1, "w") as file:
         # 遍历列表中的每个元素并将其写入文件
+        file.write("eye1 eye2 point mark")
         for item in result:
             file.write(item )  # 写入列表元素并添加换行符
     

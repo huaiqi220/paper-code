@@ -1,5 +1,5 @@
 import model
-import reader
+import A_Differential_Approach_For_Gaze_Estimation.dataloader.reader as reader
 import numpy as np
 import cv2 
 import torch

@@ -1,10 +1,10 @@
-import model
+from Model import diff_nn
 import torch
 import torch.distributed as dist
 import torch.nn as nn
 
 import yaml
-import reader
+import A_Differential_Approach_For_Gaze_Estimation.dataloader.reader as reader
 import os
 import time
 import sys

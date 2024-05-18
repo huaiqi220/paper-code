@@ -1,5 +1,5 @@
 from difNet import diffNet
-import td_reader as reader
+import A_Differential_Approach_For_Gaze_Estimation.dataloader.td_reader as reader
 import numpy as np
 import cv2 
 import torch

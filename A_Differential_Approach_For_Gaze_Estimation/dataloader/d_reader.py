@@ -53,12 +53,12 @@ class loader(Dataset):
         # print(path)
         with open(i) as f:
           line = f.readlines()
-          # if header: line.pop(0)
+          if header: line.pop(0)
           self.lines.extend(line)
     else:
       with open(i) as f:
         self.lines = f.readlines()
-        # if header: self.lines.pop(0)
+        if header: self.lines.pop(0)
 
     self.root = root
 
@@ -69,8 +69,8 @@ class loader(Dataset):
     line = self.lines[idx]
     line = line.strip().split(" ")
     point = line[2]
-    point = point.split(",")
     # print(point)
+    point = point.split(",")
     point = [point[0][1:],point[1][:-1]]
 
     eye1 = line[0]

@@ -2,15 +2,15 @@
 train:
   params:
     batch_size: 256
-    epoch: 12
+    epoch: 20
     lr: 0.001
-    decay: 0.1
+    decay: 0.5
     decay_step:
-      - 8
+      - 1
   save:
     save_path: "."
-    model_name: "AFF-Net"
-    step: 1
+    model_name: "diff-nn"
+    step: 2
   data:
     path: "/data/4_gc/2_gcout/"
 test:
@@ -18,7 +18,7 @@ test:
       begin_step: 8
       end_step: 12
       steps: 1
-      model_name: "AFF-Net"
+      model_name: "diff-nn"
       load_path: "."
    data:
       path: "/data/4_gc/2_gcout"

@@ -42,7 +42,7 @@ if __name__ == "__main__":
     epoch_log = open(os.path.join(load_path, f"{save_name}/epoch.log"), 'a')
     for save_iter in range(begin, end+step, step):
         print("Model building")
-        net = diffNet.difGazeNet()
+        net = diffNet.Diff-NN()
         net = nn.DataParallel(net)
         state_dict = torch.load(os.path.join(save_path, f"Iter_{save_iter}_{model_name}.pt"))
         net.load_state_dict(state_dict)

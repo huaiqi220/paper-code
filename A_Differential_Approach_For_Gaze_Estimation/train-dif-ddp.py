@@ -41,7 +41,7 @@ def trainModel():
     # distributed_sampler = DistributedSampler(dataset)
     # dataloader = DataLoader(dataset, batch_size=config["params"]["batch_size"], sampler=distributed_sampler)
 
-    ddp_model = diffNet.difGazeNet().to(rank)
+    ddp_model = diffNet.Diff-NN().to(rank)
     device = torch.device("cuda" + ":" + str(rank))
     ddp_model = DDP(ddp_model)
 

@@ -6,12 +6,6 @@ import random
 import torch
 from torch.utils.data.distributed import DistributedSampler
 
-'''
-DDP模型下训练差分模型的dataloader
-
-'''
-
-
 
 def aug_line(line, width, height):
   bbox = np.array(line[2:5])
@@ -59,12 +53,12 @@ class loader(Dataset):
         # print(path)
         with open(i) as f:
           line = f.readlines()
-          if header: line.pop(0)
+          # if header: line.pop(0)
           self.lines.extend(line)
     else:
       with open(i) as f:
         self.lines = f.readlines()
-        if header: self.lines.pop(0)
+        # if header: self.lines.pop(0)
 
     self.root = root
 
@@ -75,8 +69,8 @@ class loader(Dataset):
     line = self.lines[idx]
     line = line.strip().split(" ")
     point = line[2]
-    # print(point)
     point = point.split(",")
+    # print(point)
     point = [point[0][1:],point[1][:-1]]
 
     eye1 = line[0]

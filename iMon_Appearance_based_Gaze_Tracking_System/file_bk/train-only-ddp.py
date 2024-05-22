@@ -1,10 +1,10 @@
-from difNet import baseline_cnn_model
+from difNet import crossNet
 import torch
 import torch.distributed as dist
 import torch.nn as nn
 
 import yaml
-import A_Differential_Approach_For_Gaze_Estimation.dataloader.d_reader as reader
+import d_reader as reader
 import os
 import time
 import sys
@@ -41,7 +41,7 @@ def trainModel():
     # distributed_sampler = DistributedSampler(dataset)
     # dataloader = DataLoader(dataset, batch_size=config["params"]["batch_size"], sampler=distributed_sampler)
 
-    ddp_model = baseline_cnn_model.oriGazeNet().to(rank)
+    ddp_model = crossNet.oriGazeNet().to(rank)
     device = torch.device("cuda" + ":" + str(rank))
     ddp_model = DDP(ddp_model)
 

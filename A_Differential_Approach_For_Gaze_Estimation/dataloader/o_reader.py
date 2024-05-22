@@ -6,12 +6,6 @@ import random
 import torch
 from torch.utils.data.distributed import DistributedSampler
 
-'''
-DDP模型下训练差分模型的dataloader
-
-'''
-
-
 
 def aug_line(line, width, height):
   bbox = np.array(line[2:5])
@@ -74,45 +68,64 @@ class loader(Dataset):
   def __getitem__(self, idx):
     line = self.lines[idx]
     line = line.strip().split(" ")
-    point = line[2]
-    # print(point)
-    point = point.split(",")
-    point = [point[0][1:],point[1][:-1]]
 
-    eye1 = line[0]
-    eye2 = line[1]
+    name = line[0]
+    # device = line[5]
+    point = line[4]
+    faceb = line[6].split(",")
+    leftb = line[7].split(",")
+    rightb = line[8].split(",")
+    bbox = faceb + leftb + rightb
+    face = line[0]
+    lefteye = line[1]
+    righteye = line[2]
+    # grid = line[3]
 
-    label = np.array(point).astype("float")
+    label = np.array(point.split(",")).astype("float")
     label = torch.from_numpy(label).type(torch.FloatTensor)
 
-    eye1 = cv2.imread(os.path.join(self.root, eye1))
-    eye1 = cv2.resize(eye1, (48, 72))/255.0
-    eye1 = eye1.transpose(2, 0, 1)
+    # rect = np.array(bbox).astype("float")
+    # rect = torch.from_numpy(rect).type(torch.FloatTensor)
 
-    eye2 = cv2.imread(os.path.join(self.root, eye2))
-    eye2 = cv2.resize(eye2 , (48, 72))/255.0
-    eye2 = eye2.transpose(2, 0, 1)
+    rimg = cv2.imread(os.path.join(self.root, righteye))
+    rimg = cv2.resize(rimg,  (48, 72))/255.0
+    rimg = rimg.transpose(2, 0, 1)
+
+    limg = cv2.imread(os.path.join(self.root, lefteye))
+    limg = cv2.resize(limg,  (48, 72))/255.0
+    limg = limg.transpose(2, 0, 1)
     
+    # fimg = cv2.imread(os.path.join(self.root, face))
+    # fimg = cv2.resize(fimg, (224, 224))/255.0
+    # fimg = fimg.transpose(2, 0, 1)
+ 
+    # grid = cv2.imread(os.path.join(self.root, grid), 0)
+    # grid = np.expand_dims(grid, 0)
 
-    img = {"eye1":torch.from_numpy(eye1).type(torch.FloatTensor),
-            "eye2":torch.from_numpy(eye2).type(torch.FloatTensor),
+    img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
+            "right":torch.from_numpy(rimg).type(torch.FloatTensor),
+            # "face":torch.from_numpy(fimg).type(torch.FloatTensor),
             # "grid":torch.from_numpy(grid).type(torch.FloatTensor),
+            "name":name,
+            # "rects":rect,
             "label":label,
             "device": "Android"}
 
     return img
 
 def txtload(labelpath, imagepath, batch_size, shuffle=True, num_workers=0, header=True):
+
   dataset = loader(labelpath, imagepath, header)
   distributed_sampler = DistributedSampler(dataset)
   print(f"[Read Data]: Total num: {len(dataset)}")
-  load = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,sampler=distributed_sampler)
+  load = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,sampler=distributed_sampler,pin_memory=True)
+  # load = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
   return load
 
 
 if __name__ == "__main__":
-  label = "/data300m2/output/gazecapture/Label_dif/train"
-  image = "/data300m2/output/gazecapture/Image"
+  label = "/data/4_gc/2_gcout/Label/train"
+  image = "/data/4_gc/2_gcout/Image"
   trains = os.listdir(label)
   trains = [os.path.join(label, j) for j in trains]
   print(trains)

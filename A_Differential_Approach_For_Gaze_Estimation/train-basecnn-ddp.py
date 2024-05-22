@@ -1,28 +1,29 @@
-from Model import diff_nn
+from Model import baseline_cnn_model
 import torch
 import torch.distributed as dist
 import torch.nn as nn
 
 import yaml
-from dataloader import d_reader as reader
+import dataloader.o_reader as reader
 import os
 import time
 import sys
 
 from torch.nn.parallel import DistributedDataParallel as DDP
-torch.autograd.set_detect_anomaly(True)
 
+
+torch.autograd.set_detect_anomaly(True)
 
 from torch.cuda.amp import autocast
 
+
 '''
-使用DDP在GC上训练diff-nn差分模型
-torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train-dif-ddp.py
+在未改变标签的原始GC数据集上,直接通过右眼预测baseCNN作为基准方法
+torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29400 train-basecnn-ddp.py
 
 '''
 
 def trainModel():
-
     # 初始化进程组
     dist.init_process_group("nccl")
     rank = dist.get_rank()
@@ -33,7 +34,7 @@ def trainModel():
     path = config["data"]["path"]
     model_name = config["save"]["model_name"]
 
-    save_path = os.path.join(config["save"]["save_path"], "checkpoint", "diff",str(config["params"]["batch_size"]) +"_" + str(config["params"]["epoch"]) + "_" + str(config["params"]["lr"]))
+    save_path = os.path.join(config["save"]["save_path"], "checkpoint", "base_cnn",str(config["params"]["batch_size"]) +"_" + str(config["params"]["epoch"]) + "_" + str(config["params"]["lr"]) + "_amp")
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
@@ -42,14 +43,13 @@ def trainModel():
         with open(os.path.join(save_path, 'cur_config.yaml'), 'w') as file:
             yaml.dump(oconfig, file)
 
-
-    path1 = os.path.join(path, "Label_Diff", "train")
+    path1 = os.path.join(path, "Label", "train")
     path1 = [os.path.join(path1, item) for item in os.listdir(path1)]
 
     dataset = reader.txtload(path1, os.path.join(path, "Image"), config["params"]["batch_size"], shuffle=True,
                              num_workers=16)
-    
-    ddp_model = diff_nn.Diff_NN().to(rank)
+
+    ddp_model = baseline_cnn_model.oriGazeNet().to(rank)
     device = torch.device("cuda" + ":" + str(rank))
     ddp_model = DDP(ddp_model)
 
@@ -73,18 +73,13 @@ def trainModel():
 
             time_begin = time.time()
             for i, data in enumerate(dataset):
-                # data["face"] = data["face"].to(device)
                 optimizer.zero_grad()
                 with autocast():
-                    data["eye1"] = data["eye1"].to(device)
-                    data["eye2"] = data["eye2"].to(device)
+                    data["left"] = data["left"].to(device)
                     label = data["label"].to(device)
+                    gaze = ddp_model(data["left"])
+                    loss = loss_op(gaze, label)
 
-                    # gaze = ddp_model(data["left"], data["right"], data['face'], data['rects'])
-                    gaze = ddp_model(data["eye1"],data["eye2"])
-                    loss = loss_op(gaze, label) * 4
-
-                
                 loss.backward()
                 optimizer.step()
                 time_remain = (length - i - 1) * ((time.time() - time_begin) / (i + 1)) / 3600
@@ -104,3 +99,5 @@ def trainModel():
 
 if __name__ == "__main__":
     trainModel()
+
+# torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29400 train-dif-ddp.py

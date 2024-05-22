@@ -1,20 +1,31 @@
-from Model import diff_nn
+# from difNet import diffNet
 import torch
 import torch.distributed as dist
 import torch.nn as nn
 
 import yaml
-import A_Differential_Approach_For_Gaze_Estimation.dataloader.reader as reader
+import d_reader as reader
 import os
 import time
 import sys
-
 from torch.nn.parallel import DistributedDataParallel as DDP
+from config import sage_model_config as config
 
+from mitdata_utils import load_meta_data, split_meta_data
 
+torch.autograd.set_detect_anomaly(True)
 
+def test():
+    dots, regions, df_info = load_meta_data(config.path+'processed/')
+    print(dots.shape)
+    print(regions.shape)
+    print(df_info.shape)
+    print(dots[:2])
+    
 
 def trainModel():
+    dots, regions, df_info = load_meta_data(config.path+'processed/')
+
 
     # 初始化进程组
     dist.init_process_group("nccl")
@@ -26,12 +37,12 @@ def trainModel():
     path = config["data"]["path"]
     model_name = config["save"]["model_name"]
 
-    save_path = os.path.join(config["save"]["save_path"], "checkpoint")
+    save_path = os.path.join(config["save"]["save_path"], "checkpoint", "diff")
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
     print("读取数据")
-    path1 = os.path.join(path, "Label", "train")
+    path1 = os.path.join(path, "Label_dif", "train")
     path1 = [os.path.join(path1, item) for item in os.listdir(path1)]
 
     dataset = reader.txtload(path1, os.path.join(path, "Image"), config["params"]["batch_size"], shuffle=True,
@@ -41,7 +52,7 @@ def trainModel():
     # distributed_sampler = DistributedSampler(dataset)
     # dataloader = DataLoader(dataset, batch_size=config["params"]["batch_size"], sampler=distributed_sampler)
 
-    ddp_model = model.model().to(rank)
+    # ddp_model = diffNet.difGazeNet().to(rank)
     device = torch.device("cuda" + ":" + str(rank))
     ddp_model = DDP(ddp_model)
 
@@ -65,13 +76,15 @@ def trainModel():
 
             time_begin = time.time()
             for i, data in enumerate(dataset):
-                data["face"] = data["face"].to(device)
-                data["left"] = data["left"].to(device)
-                data['right'] = data['right'].to(device)
-                data['rects'] = data['rects'].to(device)
+                # data["face"] = data["face"].to(device)
+                data["eye1"] = data["eye1"].to(device)
+                data["eye2"] = data["eye2"].to(device)
+                # data['right'] = data['right'].to(device)
+                # data['rects'] = data['rects'].to(device)
                 label = data["label"].to(device)
 
-                gaze = ddp_model(data["left"], data["right"], data['face'], data['rects'])
+                # gaze = ddp_model(data["left"], data["right"], data['face'], data['rects'])
+                gaze = ddp_model(data["eye1"],data["eye2"])
                 loss = loss_op(gaze, label) * 4
 
                 optimizer.zero_grad()
@@ -93,6 +106,7 @@ def trainModel():
     dist.destroy_process_group()
 
 if __name__ == "__main__":
-    trainModel()
+    # trainModel()
+    test()
 
-# torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29400 train_ddp.py
+# torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train-dif-ddp.py

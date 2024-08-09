@@ -49,6 +49,7 @@ class loader(Dataset):
 
     point = line[4]
     cali = self.loaded_vectors[int(cur_person_id)]
+    cali = torch.from_numpy(cali).type(torch.FloatTensor)
 
 
     label = np.array(point.split(",")).astype("float")

@@ -13,12 +13,12 @@ hm_size = 128
 scale = 5 if mobile else 2
 
 '''Data params'''
-batch_size = 512
-epoch = 100
-lr = 1e-3
-train_decay = 0.5
+batch_size = 128
+epoch = 40
+lr = 1e-2
+train_decay = 0.1
 '''从第几epoch开始调整lr'''
-decay_step = 1
+decay_step = 24
 
 '''data path'''
 GazeCapture_root = "/data/4_gc/2_gcout/"

@@ -43,26 +43,36 @@ class mobile_gaze(nn.Module):
             nn.Linear(128,64)
         )
         self.fc1 = nn.Sequential(
-            nn.Linear(512 * 3 + 64, 3072),
-            nn.BatchNorm1d(3072),
+            # nn.Linear(512 * 3 + 64, 3072),
+            nn.Linear(512 * 3 + 64, 1024),
+            # nn.BatchNorm1d(3072),
+            nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(3072,3072),
-            nn.BatchNorm1d(3072),
+            # nn.Linear(3072,3072),
+            # nn.BatchNorm1d(3072),
+            nn.Linear(1024,1024),
+            nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(3072,512 + self.cali_shape)
+            # nn.Linear(3072,512 + self.cali_shape)
+            nn.Linear(1024,512 + self.cali_shape)
         )
         self.fc2 = nn.Sequential(
-            nn.Linear(512 + self.cali_shape, 3072),
-            nn.BatchNorm1d(3072),
+            # nn.Linear(512 + self.cali_shape, 3072),
+            nn.Linear(512 + self.cali_shape, 1024),
+            # nn.BatchNorm1d(3072),
+            nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(3072,3072),
-            nn.BatchNorm1d(3072),
+            # nn.Linear(3072,3072),
+            # nn.BatchNorm1d(3072),
+            nn.Linear(1024,1024),
+            nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(3072, self.heat_map_shape * self.heat_map_shape)
+            # nn.Linear(3072, self.heat_map_shape * self.heat_map_shape)
+            nn.Linear(1024, self.heat_map_shape * self.heat_map_shape)
         )
     
     def forward(self, face, left, right, grid, cali):

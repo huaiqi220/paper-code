@@ -90,7 +90,7 @@ def trainModel():
                 sys.stdout.flush()
                 outfile.flush()
 
-            if epoch % config.save_step == 0 and rank == 0:
+            if epoch > config.save_start_step and epoch % config.save_step == 0  and rank == 0:
                 torch.save(ddp_model.state_dict(), os.path.join(save_path, f"Iter_{epoch}_{model_name}.pt"))
 
 

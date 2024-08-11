@@ -8,7 +8,7 @@ class ResNet18Conv(nn.Module):
     def __init__(self):
         super(ResNet18Conv, self).__init__()
         # Load the pre-trained ResNet-18 model
-        resnet18 = models.resnet18(pretrained=False)
+        resnet18 = models.resnet18(pretrained=True)
         # Extract the convolutional part (up to the last conv layer)
         self.features = nn.Sequential(
             *list(resnet18.children())[:-1],
@@ -18,7 +18,13 @@ class ResNet18Conv(nn.Module):
     def forward(self, x):
         x = self.features(x)
         return x
-    
+
+def getMobileNetV2CNN():
+    model = models.mobilenet_v2(pretrained=True)
+
+    # 删除全连接层
+    model.classifier = nn.Linear(1280, 512)
+    return model
 
 class mobile_gaze(nn.Module):
     def __init__(self,hm_size,cali_size,grid_size):
@@ -28,8 +34,8 @@ class mobile_gaze(nn.Module):
         self.cali_shape = cali_size
         '''grid size = grid height * grid width'''
         self.grid_size = grid_size
-        self.face_cnn = ResNet18Conv()
-        self.eye_cnn = ResNet18Conv()
+        self.face_cnn = getMobileNetV2CNN()
+        self.eye_cnn = getMobileNetV2CNN()
         self.grid_linear = nn.Sequential(
             nn.Flatten(),
             nn.Linear(grid_size, 256),

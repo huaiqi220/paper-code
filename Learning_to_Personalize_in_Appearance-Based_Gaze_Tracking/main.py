@@ -15,6 +15,7 @@ torch.autograd.set_detect_anomaly(True)
 
 from model import Mobile_Gaze
 from torch.cuda.amp import autocast
+from util import htools
 
 '''
 使用DDP在GC上训练diff-nn差分模型
@@ -50,7 +51,7 @@ def trainModel():
     cali_loss = nn.MSELoss()
     hm_loss = loss_func.WeightedL1Loss(config.hm_loss_alpha)
     base_lr = config.lr
-    optimizer = torch.optim.Adam(ddp_model.parameters(), base_lr, weight_decay=0.0005)
+    optimizer = torch.optim.SGD(ddp_model.parameters(), base_lr, weight_decay=0.0005)
 
     print("训练")
     length = len(dataset)
@@ -64,21 +65,26 @@ def trainModel():
             time_begin = time.time()
             for i, data in enumerate(dataset):
                 optimizer.zero_grad()
-                # with autocast():
+                with autocast():
                     # data["eye1"] = data["eye1"].to(device)
                     # data["eye2"] = data["eye2"].to(device)
                     # label = data["label"].to(device)
-                data["face"] = data["face"].to(device)
-                data["left"] = data["left"].to(device)
-                data["right"] = data["right"].to(device)
-                data["grid"] = data["grid"].to(device)
-                data["cali"] = data["cali"].to(device)
-                data["label"] = data["label"].to(device)
-                # gaze = ddp_model(data["left"], data["right"], data['face'], data['rects'])
-                c, gaze_heatmap = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["cali"])
-                # loss = loss_func.heatmap_loss(gaze_heatmap, data["label"]) + config.loss_alpha * cali_loss(c,data["cali"])
-                loss = hm_loss(gaze_heatmap, data["label"]) + config.loss_alpha * cali_loss(c, data["cali"])
-                
+                    data["face"] = data["face"].to(device)
+                    data["left"] = data["left"].to(device)
+                    data["right"] = data["right"].to(device)
+                    data["grid"] = data["grid"].to(device)
+                    data["cali"] = data["cali"].to(device)
+                    data["label"] = data["label"].to(device)
+                    # gaze = ddp_model(data["left"], data["right"], data['face'], data['rects'])
+                    c, gaze_heatmap = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["cali"])
+                    # loss = loss_func.heatmap_loss(gaze_heatmap, data["label"]) + config.loss_alpha * cali_loss(c,data["cali"])
+                    loss = hm_loss(gaze_heatmap, data["label"]) + config.loss_alpha * cali_loss(c, data["cali"])
+                    file_name = str(time.time())
+                    htools.save_first_image(gaze_heatmap,file_name + "_out.png" )
+                    htools.save_first_image(data["label"], file_name + "_label.png" )
+                    
+
+
                 loss.backward()
                 optimizer.step()
                 time_remain = (length - i - 1) * ((time.time() - time_begin) / (i + 1)) / 3600

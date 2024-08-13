@@ -17,8 +17,8 @@ hm_level = 4
 
 
 '''Data params'''
-batch_size = 64
-epoch = 100
+batch_size = 96
+epoch = 60
 lr = 1e-3
 train_decay_rate = 0.7
 '''从第几epoch开始调整lr'''
@@ -33,8 +33,8 @@ GazeCapture_Cali_path = "/home/zhuzi/code/2024-5/paper-code/Learning_to_Personal
 '''save path'''
 save_path = "./checkpoint"
 model_name = "MobileNetV2-Gaze"
-save_start_step = 60
-save_step = 4
+save_start_step = 50
+save_step = 2
 
 
 '''test params'''

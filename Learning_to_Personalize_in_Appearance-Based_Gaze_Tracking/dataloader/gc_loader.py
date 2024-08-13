@@ -91,7 +91,7 @@ def txtload(labelpath, imagepath, batch_size, shuffle=True, num_workers=0, heade
   dataset = loader(labelpath, imagepath, header)
   distributed_sampler = DistributedSampler(dataset)
   print(f"[Read Data]: Total num: {len(dataset)}")
-  load = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,sampler=distributed_sampler)
+  load = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,sampler=distributed_sampler,pin_memory=True)
   # load = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
   return load
 

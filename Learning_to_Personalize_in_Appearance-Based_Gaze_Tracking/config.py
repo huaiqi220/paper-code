@@ -11,6 +11,7 @@ heatmap = False
 r = 'r0.2'
 hm_size = 128
 scale = 5 if mobile else 2
+hm_level = 4
 
 '''Data params'''
 batch_size = 64

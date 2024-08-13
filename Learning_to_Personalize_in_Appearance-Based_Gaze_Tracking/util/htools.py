@@ -25,24 +25,24 @@ def pog2heatmap(label):
                                             j-int(hmFocus_size/2)]))/((hmFocus_size)/2)
                 gauss_prob = gauss(distanceFromCenter, stdv)
                 HM_FOCUS_IM[level, i, j, 0] = gauss_prob
-    HM_FOCUS_IM[level, :, :, 0] /= np.sum(HM_FOCUS_IM[level, :, :, 0])
+    # HM_FOCUS_IM[level, :, :, 0] /= np.sum(HM_FOCUS_IM[level, :, :, 0])
     # heatmap_im = convert_image_dtype(HM_FOCUS_IM[0, :, :, :], tf.float32)
     # heatmap_im = pad_to_bounding_box(heatmap_im,
     #                                   int(label[0]*scale+hm_size/2-hmFocus_size/2),
     #                                   int(label[1]*scale+hm_size/2-hmFocus_size/2),
     #                                   hm_size, hm_size)
-    heatmap_im = HM_FOCUS_IM[0, :, :, :].astype(np.float32)
+    heatmap_im = HM_FOCUS_IM[config.hm_level, :, :, :].astype(np.float32)
     heatmap_im = heatmap_im.transpose(2, 0, 1)
     heatmap_im = torch.from_numpy(heatmap_im)
 
     # Calculate padding values
     # print(label)
-    y_center = label[0] * config.scale
+    y_center = label[1] * config.scale
     if y_center > 64:
         y_center = 64
     if y_center < -64:
         y_center = -64
-    x_center = label[1] * config.scale
+    x_center = label[0] * config.scale
     if x_center > 64:
         x_center = 64
     if x_center < -64:

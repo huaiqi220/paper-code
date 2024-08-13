@@ -48,16 +48,16 @@ def trainModel():
 
     print("构建优化器")
     cali_loss = nn.MSELoss()
+    hm_loss = loss_func.WeightedL1Loss(config.hm_loss_alpha)
     base_lr = config.lr
-    decay_steps = config.decay_step
     optimizer = torch.optim.Adam(ddp_model.parameters(), base_lr, weight_decay=0.0005)
 
     print("训练")
     length = len(dataset)
     with open(os.path.join(save_path, "train_log"), 'w') as outfile:
         for epoch in range(1, config.epoch + 1):
-            if decay_steps > 1 and epoch > decay_steps:
-                base_lr = base_lr * config.train_decay
+            if epoch >= config.lr_decay_start_step and epoch % config.lr_decay_cycle == 0:
+                base_lr = base_lr * config.train_decay_rate
                 for param_group in optimizer.param_groups:
                     param_group["lr"] = base_lr
 
@@ -76,15 +76,15 @@ def trainModel():
                 data["label"] = data["label"].to(device)
                 # gaze = ddp_model(data["left"], data["right"], data['face'], data['rects'])
                 c, gaze_heatmap = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["cali"])
-                loss = loss_func.heatmap_loss(gaze_heatmap, data["label"]) + config.loss_alpha * cali_loss(c,data["cali"])
-
+                # loss = loss_func.heatmap_loss(gaze_heatmap, data["label"]) + config.loss_alpha * cali_loss(c,data["cali"])
+                loss = hm_loss(gaze_heatmap, data["label"]) + config.loss_alpha * cali_loss(c, data["cali"])
                 
                 loss.backward()
                 optimizer.step()
                 time_remain = (length - i - 1) * ((time.time() - time_begin) / (i + 1)) / 3600
                 epoch_time = (length - 1) * ((time.time() - time_begin) / (i + 1)) / 3600
                 time_remain_total = time_remain + epoch_time * (config.epoch - epoch)
-                log = f"[{epoch}/{config.epoch}]: [{i}/{length}] loss:{loss:.5f} lr:{base_lr} time:{time_remain:.2f}h total:{time_remain_total:.2f}h"
+                log = f"[{epoch}/{config.epoch}]: [{i}/{length}] loss:{loss:.10f} lr:{base_lr} time:{time_remain:.2f}h total:{time_remain_total:.2f}h"
                 outfile.write(log + "\n")
                 print(log)
                 sys.stdout.flush()

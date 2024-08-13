@@ -4,9 +4,14 @@ import torch
 from torch.functional import F
 import config
 import matplotlib.pyplot as plt
+import torchvision.transforms as transforms
+from PIL import Image
+import os
 
+'''
+计算高斯分布
 
-
+'''
 def gauss(x, stdv=0.5):
     return exp(-(1/(2*stdv))*(x**2))/(sqrt(2*pi*stdv))
 
@@ -60,53 +65,35 @@ def pog2heatmap(label):
     return heatmap_im
 
 
+def save_first_image(tensor, filename):
+    # 选择第一个tensor，并移除channel维度 (1, 128, 128 -> 128, 128)
+    dims = tensor.dim()
+    if dims == 4:
+    # 处理 N * C * H * W 的情况
+        if tensor.shape[1] == 1:
+            # 移除 channel 维度 (N, 1, H, W -> N, H, W)
+            image_tensor = tensor[0, 0, :, :]
+        else:
+            raise ValueError("The second dimension must be 1 for grayscale images in N * C * H * W format.")
+    elif dims == 3:
+        # 处理 N * H * W 的情况
+        image_tensor = tensor[0, :, :]
+    else:
+        raise ValueError("Tensor must be either N * C * H * W or N * H * W")
+    # 如果tensor在GPU上，先将其移到CPU上
+    if tensor.is_cuda:
+        tensor = tensor.cpu()
+    # 转换为 PIL 图像
+    transform = transforms.ToPILImage()
+    image = transform(image_tensor)
 
-def pog2heatmap2(label):
-    hmFocus_size = 17  # Focus size for heatmap
+    # 保存图像
+    image.save(os.path.join("./images",filename))
 
-    # Create a Gaussian heatmap template
-    stdv_list = [0.2, 0.25, 0.3, 0.35, 0.4]
-    HM_FOCUS_IM = np.zeros((5, hmFocus_size, hmFocus_size))
-    for level, stdv in enumerate(stdv_list):
-        for i in range(hmFocus_size):
-            for j in range(hmFocus_size):
-                distanceFromCenter = 2 * np.linalg.norm(np.array([i, j]) - np.array([hmFocus_size/2, hmFocus_size/2])) / (hmFocus_size / 2)
-                HM_FOCUS_IM[level, i, j] = np.exp(-0.5 * (distanceFromCenter / stdv) ** 2)
-        HM_FOCUS_IM[level] /= np.sum(HM_FOCUS_IM[level])  # Normalize
-
-    # Use the first level of heatmap as the base
-    heatmap_im = HM_FOCUS_IM[0].astype(np.float32)
-    heatmap_im = torch.from_numpy(heatmap_im).unsqueeze(0)  # Shape (1, 17, 17)
-
-    # Compute the center position
-    center_x = label[0] * config.scale + config.hm_size // 2
-    center_y = label[1] * config.scale + config.hm_size // 2
-
-    # Define the bounding box to place the heatmap
-    top_left_x = int(max(center_x - hmFocus_size // 2, 0))
-    top_left_y = int(max(center_y - hmFocus_size // 2, 0))
-    bottom_right_x = int(min(center_x + hmFocus_size // 2, config.hm_size))
-    bottom_right_y = int(min(center_y + hmFocus_size // 2, config.hm_size))
-
-    # Pad the heatmap to fit within the desired bounding box
-    padding = (
-        top_left_x, max(config.hm_size - bottom_right_x, 0),
-        top_left_y, max(config.hm_size - bottom_right_y, 0)
-    )
-
-    heatmap_im = F.pad(heatmap_im, padding, mode='constant', value=0)
-
-    # Crop or resize to 128x128 if necessary
-    if heatmap_im.shape[1] > 128 or heatmap_im.shape[2] > 128:
-        heatmap_im = F.interpolate(heatmap_im.unsqueeze(0), size=(128, 128), mode='bilinear', align_corners=False).squeeze(0)
-
-    return heatmap_im
-
-
-if __name__ == "__main__":
-    heatmap = pog2heatmap([-100,10])
-    heatmap = heatmap.squeeze().numpy()
-    plt.imshow(heatmap, cmap='viridis', interpolation='nearest')
-    plt.colorbar()  # Add a colorbar to the side
-    plt.title('Heatmap Visualization')
-    plt.savefig('heatmap.png')
+# if __name__ == "__main__":
+#     heatmap = pog2heatmap([-100,10])
+#     heatmap = heatmap.squeeze().numpy()
+#     plt.imshow(heatmap, cmap='viridis', interpolation='nearest')
+#     plt.colorbar()  # Add a colorbar to the side
+#     plt.title('Heatmap Visualization')
+#     plt.savefig('heatmap.png')

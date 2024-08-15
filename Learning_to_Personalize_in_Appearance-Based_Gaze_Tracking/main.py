@@ -10,15 +10,16 @@ import sys
 from util import loss_func
 import config
 
+from util import loss_func
 from torch.nn.parallel import DistributedDataParallel as DDP
 torch.autograd.set_detect_anomaly(True)
 
 from model import Mobile_Gaze
 from torch.cuda.amp import autocast
 from util import htools
+import logging
 
 '''
-使用DDP在GC上训练diff-nn差分模型
 torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 main.py
 
 '''
@@ -43,13 +44,14 @@ def trainModel():
     dataset = reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
                              num_workers=8)
     
-    ddp_model = Mobile_Gaze.mobile_gaze(config.hm_size, 8, 25 * 25).to(rank)
+    ddp_model = Mobile_Gaze.mobile_gaze_hm(config.hm_size, 8, 25 * 25).to(rank)
     device = torch.device("cuda" + ":" + str(rank))
     ddp_model = DDP(ddp_model)
 
     print("构建优化器")
     cali_loss = nn.MSELoss()
     hm_loss = loss_func.WeightedL1Loss(config.hm_loss_alpha)
+    d2_loss = nn.MSELoss()
     base_lr = config.lr
     optimizer = torch.optim.SGD(ddp_model.parameters(), base_lr, weight_decay=0.0005)
 
@@ -66,21 +68,23 @@ def trainModel():
             for i, data in enumerate(dataset):
                 optimizer.zero_grad()
                 with autocast():
-                    # data["eye1"] = data["eye1"].to(device)
-                    # data["eye2"] = data["eye2"].to(device)
-                    # label = data["label"].to(device)
                     data["face"] = data["face"].to(device)
                     data["left"] = data["left"].to(device)
                     data["right"] = data["right"].to(device)
                     data["grid"] = data["grid"].to(device)
                     data["cali"] = data["cali"].to(device)
                     data["label"] = data["label"].to(device)
+                    data["poglabel"] = data["poglabel"].to(device)
                     # gaze = ddp_model(data["left"], data["right"], data['face'], data['rects'])
-                    c, gaze_heatmap = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["cali"])
+                    c, gaze_out = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["cali"])
                     # loss = loss_func.heatmap_loss(gaze_heatmap, data["label"]) + config.loss_alpha * cali_loss(c,data["cali"])
-                    loss = hm_loss(gaze_heatmap, data["label"]) + config.loss_alpha * cali_loss(c, data["cali"])
+                    # loss = hm_loss(gaze_heatmap, data["label"]) + config.loss_alpha * cali_loss(c, data["cali"])
+                    # loss = d2_loss(gaze_out,data["poglabel"]) + config.loss_alpha * cali_loss(c, data["cali"])
+                    loss = loss_func.heatmap_loss(data["label"],gaze_out) + config.loss_alpha * cali_loss(c, data["cali"])
+
+                    """绘制heatmap，仅heatmap输出才解注释"""
                     file_name = str(time.time())
-                    htools.save_first_image(gaze_heatmap,file_name + "_out.png" )
+                    htools.save_first_image(gaze_out,file_name + "_out.png" )
                     htools.save_first_image(data["label"], file_name + "_label.png" )
                     
 

@@ -54,6 +54,7 @@ class loader(Dataset):
 
     label = np.array(point.split(",")).astype("float")
     label = torch.from_numpy(label).type(torch.FloatTensor)
+    poglabel = label
     label = htools.pog2heatmap(label)
 
     # rect = np.array(bbox).astype("float")
@@ -82,6 +83,7 @@ class loader(Dataset):
             "cali":cali,
             # "rects":rect,
             "label":label,
+            "poglabel":poglabel,
             "device": "Android"}
 
     return img

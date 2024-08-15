@@ -20,7 +20,7 @@ hm_level = 4
 batch_size = 96
 epoch = 60
 lr = 1e-3
-train_decay_rate = 0.7
+train_decay_rate = 0.1
 '''从第几epoch开始调整lr'''
 lr_decay_start_step = 30
 lr_decay_cycle = 10

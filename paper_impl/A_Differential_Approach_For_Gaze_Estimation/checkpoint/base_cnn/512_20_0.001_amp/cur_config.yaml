@@ -1,0 +1,23 @@
+test:
+  data:
+    path: /data/4_gc/2_gcout
+  load:
+    begin_step: 8
+    end_step: 12
+    load_path: .
+    model_name: diff-nn
+    steps: 1
+train:
+  data:
+    path: /data/4_gc/2_gcout/
+  params:
+    batch_size: 512
+    decay: 0.5
+    decay_step:
+    - 1
+    epoch: 20
+    lr: 0.001
+  save:
+    model_name: diff-nn
+    save_path: .
+    step: 2

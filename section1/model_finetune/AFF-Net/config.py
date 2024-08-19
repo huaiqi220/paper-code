@@ -23,7 +23,7 @@ test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/zhuzi/code/2024-5/paper-code/section1/model_finetune/AFF-Net/checkpoint/GazeCapture"
+test_model_path = "/home/zhuzi/code/2024-5/paper-code/section1/model_finetune/AFF-Net/checkpoint/GazeCapture/256_16_0.001/Iter_16_AFF-Net.pt"
 test_begin_step = 8
 test_end_step = 12
 save_steps = 1
@@ -35,6 +35,8 @@ cali_batch_size = 3
 cali_epoch = 8
 cali_lr = 1e-3
 cali_last_layer = False
+
+cali_image_num = 45
 
 
 

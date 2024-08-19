@@ -33,7 +33,7 @@ save_steps = 1
 '''Personal Cali Train && Test Params'''
 cali_batch_size = 3
 cali_epoch = 8
-cali_lr = 1e-3
+cali_lr = 1e-5
 cali_last_layer = False
 
 cali_image_num = 45

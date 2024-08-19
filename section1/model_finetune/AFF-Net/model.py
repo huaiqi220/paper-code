@@ -205,6 +205,6 @@ if __name__ == '__main__':
                "label": torch.zeros(10, 2), "frame": "test.jpg"}
     # a = m(feature["leftEyeImg"], feature["rightEyeImg"], feature["faceImg"], feature["faceGridImg"])
     # print(a.shape)
-    from thop import profile
-    flops, params = profile(m,inputs=(feature["leftEyeImg"], feature["rightEyeImg"], feature["faceImg"], feature["faceGridImg"],))
-    print(f'FLOPs: {flops}')
+    # from thop import profile
+    # flops, params = profile(m,inputs=(feature["leftEyeImg"], feature["rightEyeImg"], feature["faceImg"], feature["faceGridImg"],))
+    # print(f'FLOPs: {flops}')

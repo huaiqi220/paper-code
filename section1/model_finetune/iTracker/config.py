@@ -1,11 +1,11 @@
 
 '''Data params'''
-batch_size = 256
-epoch = 16
+batch_size = 512
+epoch = 20
 lr = 1e-3
 train_decay_rate = 0.1
 '''从第几epoch开始调整lr'''
-lr_decay_start_step = 8
+lr_decay_start_step = 10
 lr_decay_cycle = 2
 
 '''data path'''
@@ -16,7 +16,7 @@ cur_dataset = "GazeCapture"
 
 '''save path'''
 save_path = "./checkpoint"
-model_name = "AFF-Net"
+model_name = "iTracker"
 save_start_step = 12
 save_step = 1
 test_save_path = "./evaluation"
@@ -37,6 +37,6 @@ cali_lr = 1e-5
 cali_last_layer = False
 
 cali_image_num = 45
-
+cali_rank = 0
 
 

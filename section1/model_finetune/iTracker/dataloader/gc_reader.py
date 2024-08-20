@@ -88,11 +88,11 @@ class loader(Dataset):
     rect = torch.from_numpy(rect).type(torch.FloatTensor)
 
     rimg = cv2.imread(os.path.join(self.root, righteye))
-    rimg = cv2.resize(rimg, (112, 112))/255.0
+    rimg = cv2.resize(rimg, (224, 224))/255.0
     rimg = rimg.transpose(2, 0, 1)
 
     limg = cv2.imread(os.path.join(self.root, lefteye))
-    limg = cv2.resize(limg, (112, 112))/255.0
+    limg = cv2.resize(limg, (224, 224))/255.0
     limg = limg.transpose(2, 0, 1)
     
     fimg = cv2.imread(os.path.join(self.root, face))
@@ -105,7 +105,7 @@ class loader(Dataset):
     img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
             "right":torch.from_numpy(rimg).type(torch.FloatTensor),
             "face":torch.from_numpy(fimg).type(torch.FloatTensor),
-            # "grid":torch.from_numpy(grid).type(torch.FloatTensor),
+            "grid":torch.from_numpy(grid).type(torch.FloatTensor),
             "name":name,
             "rects":rect,
             "label":label,
@@ -144,11 +144,11 @@ class caliloader(Dataset):
     rect = torch.from_numpy(rect).type(torch.FloatTensor)
 
     rimg = cv2.imread(os.path.join(self.root, righteye))
-    rimg = cv2.resize(rimg, (112, 112))/255.0
+    rimg = cv2.resize(rimg, (224, 224))/255.0
     rimg = rimg.transpose(2, 0, 1)
 
     limg = cv2.imread(os.path.join(self.root, lefteye))
-    limg = cv2.resize(limg, (112, 112))/255.0
+    limg = cv2.resize(limg, (224, 224))/255.0
     limg = limg.transpose(2, 0, 1)
     
     fimg = cv2.imread(os.path.join(self.root, face))
@@ -161,7 +161,7 @@ class caliloader(Dataset):
     img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
             "right":torch.from_numpy(rimg).type(torch.FloatTensor),
             "face":torch.from_numpy(fimg).type(torch.FloatTensor),
-            # "grid":torch.from_numpy(grid).type(torch.FloatTensor),
+            "grid":torch.from_numpy(grid).type(torch.FloatTensor),
             "name":name,
             "rects":rect,
             "label":label,

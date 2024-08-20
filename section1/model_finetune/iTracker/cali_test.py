@@ -6,7 +6,7 @@ import random
 from dataloader import gc_reader
 from dataloader import mpii_reader
 import logging
-from model import model
+from model import ITrackerModel as model
 import math
 import torch.nn as nn
 import time
@@ -39,11 +39,11 @@ def test_func(name, calimodel, dataset,save_path,rank,cali_test):
                 data["face"] = data["face"].to(device)
                 data["left"] = data["left"].to(device)
                 data["right"] = data["right"].to(device)
-                # data["grid"] = data["grid"].to(device)
+                data["grid"] = data["grid"].to(device)
                 data["rects"] = data["rects"].to(device)
                 labels = data["label"]
                 # data["poglabel"] = data["poglabel"].to(device)
-                gazes = calimodel(data["left"], data["right"], data["face"], data["rects"])
+                gazes = calimodel(data)
 
                 print(f'\r[Batch : {j}]', end='')
                 #print(f'gazes: {gazes.shape}')
@@ -102,11 +102,11 @@ def cali_train_func(name,calimodel,dataset,save_path,rank):
                     data["face"] = data["face"].to(device)
                     data["left"] = data["left"].to(device)
                     data["right"] = data["right"].to(device)
-                    # data["grid"] = data["grid"].to(device)
+                    data["grid"] = data["grid"].to(device)
                     data["rects"] = data["rects"].to(device)
                     data["label"] = data["label"].to(device)
                     # data["poglabel"] = data["poglabel"].to(device)
-                    gaze_out = calimodel(data["left"], data["right"], data["face"], data["rects"])
+                    gaze_out = calimodel(data)
                     loss = loss_func(gaze_out, data["label"])        
 
 
@@ -131,7 +131,7 @@ def cali_test_func(root_path, label):
     '''
     返回三个数字：校准前error，训练loss，校准后error
     '''
-    rank = 0
+    rank = config.cali_rank
 
     cur_id = label.split("/")[-1].split(".")[0]
     cali_folder = os.path.join(config.test_save_path,cur_id)

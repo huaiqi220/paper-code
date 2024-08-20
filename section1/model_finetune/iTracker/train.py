@@ -10,7 +10,7 @@ import sys
 import config
 from torch.nn.parallel import DistributedDataParallel as DDP
 torch.autograd.set_detect_anomaly(True)
-from model import model
+from model import ITrackerModel as model
 from torch.cuda.amp import autocast
 import logging
 
@@ -51,9 +51,10 @@ def trainModel():
     elif config.cur_dataset == "MPII":
         dataset = mpii_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
                                 num_workers=8)
-    
-    ddp_model = model().to(rank)
-    device = torch.device("cuda" + ":" + str(rank))
+    '''不加这个，多机分布式训练时候会出问题'''
+    device_id = rank % torch.cuda.device_count()
+    ddp_model = model().to(device_id)
+    device = torch.device("cuda" + ":" + str(device_id))
     ddp_model = DDP(ddp_model)
 
     print("构建优化器")
@@ -77,11 +78,11 @@ def trainModel():
                     data["face"] = data["face"].to(device)
                     data["left"] = data["left"].to(device)
                     data["right"] = data["right"].to(device)
-                    # data["grid"] = data["grid"].to(device)
+                    data["grid"] = data["grid"].to(device)
                     data["rects"] = data["rects"].to(device)
                     data["label"] = data["label"].to(device)
                     # data["poglabel"] = data["poglabel"].to(device)
-                    gaze_out = ddp_model(data["left"], data["right"], data["face"], data["rects"])
+                    gaze_out = ddp_model(data)
                     loss = loss_func(gaze_out, data["label"])        
 
 

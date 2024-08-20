@@ -1,107 +1,106 @@
-import model
-from reader import reader_gc as dataloader
-import numpy as np
+
 import torch
+import torch.distributed as dist
 import torch.nn as nn
-import torch.optim as optim
+from dataloader import gc_reader
+from dataloader import mpii_reader 
+import os
 import time
 import sys
-import os
-import copy
-import yaml
-import importlib
-import torch.distributed as dist
-from torch.profiler import profile, record_function, ProfilerActivity
+import config
 from torch.nn.parallel import DistributedDataParallel as DDP
+torch.autograd.set_detect_anomaly(True)
+from model import model
+from torch.cuda.amp import autocast
+import logging
+
+
+'''
+torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
+
+'''
 
 def trainModel():
-  dist.init_process_group("nccl")
-  rank = dist.get_rank()
-  print(f"Start running basic DDP example on rank {rank}.")
-  
-  config = yaml.load(open("./config/config_gazecapture.yaml"), Loader=yaml.FullLoader)
-  readername = config["reader"]
-  
-  config = config["train"]
 
-  imagepath = config["data"]["image"]
-  labelpath = config["data"]["label"]
-  modelname = config["save"]["model_name"]
-
-  trains = os.listdir(labelpath)
-  trains.sort()
-  print(f"Train Sets Num:{len(trains)}")
-
-  trainlabelpath = [os.path.join(labelpath, j) for j in trains] 
-
-  savepath = os.path.join(config["save"]["save_path"], f"checkpoint/")
-  if not os.path.exists(savepath):
-    os.makedirs(savepath)
-
-  
-  print("Read data")
-  dataset = dataloader.txtload(trainlabelpath, imagepath, config["params"]["batch_size"], shuffle=False, num_workers=8, header=True, pin_memory=True)
-
-  print("Model building")
-  net = model.ITrackerModel().to(rank)
-  device = torch.device("cuda" + ":" + str(rank))
-  net = DDP(net)
-
-  print("optimizer building")
-  lossfunc = config["params"]["loss"]
-  loss_op = getattr(nn, lossfunc)().cuda()
-  base_lr = config["params"]["lr"]
-
-  decaysteps = config["params"]["decay_step"]
-  decayratio = config["params"]["decay"]
-
-  optimizer = optim.Adam(net.parameters(),lr=base_lr,  weight_decay=0.0005)
-  scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=decaysteps, gamma=decayratio)
+    # 初始化进程组
+    dist.init_process_group("nccl")
+    rank = dist.get_rank()
+    print(f"Start running basic DDP example on rank {rank}.")
 
 
-  # training loop wrapped with profiler object\
-  with record_function("model_inference"):
-    print("Traning")
+    """判断加载哪个数据集"""
+    if config.cur_dataset == "GazeCapture":
+        root_path = config.GazeCapture_root
+    elif config.cur_dataset == "MPII":
+        root_path = config.MPIIFaceGaze_root
+
+    
+    model_name = config.model_name
+    save_path = os.path.join(config.save_path,config.cur_dataset,
+                             str(config.batch_size) +"_" + str(config.epoch) + "_" + str(config.lr))
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+
+    label_path = os.path.join(root_path,"Label", "train")
+    label_path = [os.path.join(label_path, item) for item in os.listdir(label_path)]
+
+
+    if config.cur_dataset == "GazeCapture":
+        dataset = gc_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
+                                num_workers=8)
+    elif config.cur_dataset == "MPII":
+        dataset = mpii_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
+                                num_workers=8)
+    
+    ddp_model = model().to(rank)
+    device = torch.device("cuda" + ":" + str(rank))
+    ddp_model = DDP(ddp_model)
+
+    print("构建优化器")
+    loss_func = nn.MSELoss()
+    base_lr = config.lr
+    optimizer = torch.optim.Adam(ddp_model.parameters(), base_lr, weight_decay=0.0005)
+
+    print("训练")
     length = len(dataset)
-    total = length * config["params"]["epoch"]
-    cur = 0
-    timebegin = time.time()
-    with open(os.path.join(savepath, "train_log"), 'w') as outfile:
-      for epoch in range(1, config["params"]["epoch"]+1):
-        for i, (data, label) in enumerate(dataset):
+    with open(os.path.join(save_path, "train_log"), 'w') as outfile:
+        for epoch in range(1, config.epoch + 1):
+            if epoch >= config.lr_decay_start_step and epoch % config.lr_decay_cycle == 0:
+                base_lr = base_lr * config.train_decay_rate
+                for param_group in optimizer.param_groups:
+                    param_group["lr"] = base_lr
 
-          # Acquire data
-          data["left"] = data["left"].to(device)
-          data['right'] = data['right'].to(device)
-          data['face'] = data['face'].to(device)
-          data['grid'] = data['grid'].to(device)
-          label = label.to(device)
-          # forward
-          gaze = net(data)
-          # loss calculation
-          loss = loss_op(gaze, label)
-          optimizer.zero_grad()
+            time_begin = time.time()
+            for i, data in enumerate(dataset):
+                optimizer.zero_grad()
+                with autocast():
+                    data["face"] = data["face"].to(device)
+                    data["left"] = data["left"].to(device)
+                    data["right"] = data["right"].to(device)
+                    # data["grid"] = data["grid"].to(device)
+                    data["rects"] = data["rects"].to(device)
+                    data["label"] = data["label"].to(device)
+                    # data["poglabel"] = data["poglabel"].to(device)
+                    gaze_out = ddp_model(data["left"], data["right"], data["face"], data["rects"])
+                    loss = loss_func(gaze_out, data["label"])        
 
-          # backward
-          loss.backward()
-          optimizer.step()
-          scheduler.step() 
-          cur += 1
 
-          # print logs
-          if i % 20 == 0:
-            timeend = time.time()
-            resttime = (timeend - timebegin)/cur * (total-cur)/3600
-            log = f"[{epoch}/{config['params']['epoch']}]: [{i}/{length}] loss:{loss} lr:{base_lr}, rest time:{resttime:.2f}h"
-            print(log)
-            outfile.write(log + "\n")
-            sys.stdout.flush()   
-            outfile.flush()
-        if epoch % config["save"]["step"] == 0:
-          torch.save(net.state_dict(), os.path.join(savepath, f"Iter_{epoch}_{modelname}.pt"))
+                loss.backward()
+                optimizer.step()
+                time_remain = (length - i - 1) * ((time.time() - time_begin) / (i + 1)) / 3600
+                epoch_time = (length - 1) * ((time.time() - time_begin) / (i + 1)) / 3600
+                time_remain_total = time_remain + epoch_time * (config.epoch - epoch)
+                log = f"[{epoch}/{config.epoch}]: [{i}/{length}] loss:{loss:.10f} lr:{base_lr} time:{time_remain:.2f}h total:{time_remain_total:.2f}h"
+                outfile.write(log + "\n")
+                print(log)
+                sys.stdout.flush()
+                outfile.flush()
 
-  dist.destroy_process_group()
+            if epoch > config.save_start_step and epoch % config.save_step == 0  and rank == 0:
+                torch.save(ddp_model.state_dict(), os.path.join(save_path, f"Iter_{epoch}_{model_name}.pt"))
 
+
+    dist.destroy_process_group()
 
 if __name__ == "__main__":
-  trainModel()
+    trainModel()

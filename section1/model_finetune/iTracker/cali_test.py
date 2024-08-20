@@ -18,7 +18,7 @@ def dis(p1, p2):
 
 
 def test_func(name, calimodel, dataset,save_path,rank,cali_test):
-    print(calimodel)
+    # print(calimodel)
     if cali_test:
         save_path = os.path.join(save_path,"calibration_test")
     else:
@@ -141,6 +141,9 @@ def cali_test_func(root_path, label):
         all_label = f.readlines()
         all_label.pop(0)
 
+    if len(all_label) < 200 or len(all_label) < config.cali_image_num:
+        print(f"Error: {label} has too few data")
+        return
     selected_cali_lines = random.sample(all_label, config.cali_image_num)
 
     remaining_lines = [line for line in all_label if line not in selected_cali_lines]

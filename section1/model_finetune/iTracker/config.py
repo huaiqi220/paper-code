@@ -1,6 +1,6 @@
 
 '''Data params'''
-batch_size = 512
+batch_size = 256
 epoch = 20
 lr = 1e-3
 train_decay_rate = 0.1
@@ -17,13 +17,13 @@ cur_dataset = "GazeCapture"
 '''save path'''
 save_path = "./checkpoint"
 model_name = "iTracker"
-save_start_step = 12
+save_start_step = 0
 save_step = 1
 test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/zhuzi/code/2024-5/paper-code/section1/model_finetune/AFF-Net/checkpoint/GazeCapture/256_16_0.001/Iter_16_AFF-Net.pt"
+test_model_path = "/home/zhuzi/code/2024-5/paper-code/section1/model_finetune/iTracker/checkpoint/GazeCapture/512_20_0.001/Iter_1_iTracker.pt"
 test_begin_step = 8
 test_end_step = 12
 save_steps = 1

@@ -179,6 +179,20 @@ class model(nn.Module):
         )
 
     def forward(self, eyesLeft, eyesRight, faces, rects):
+        # Add batch dimension
+        faces = faces.unsqueeze(0)
+        eyesLeft = eyesLeft.unsqueeze(0)
+        eyesRight = eyesRight.unsqueeze(0)
+        rects = rects.unsqueeze(0)
+
+        eyesLeft = eyesLeft.permute(0, 3, 1, 2).contiguous()
+        eyesRight = eyesRight.permute(0, 3, 1, 2).contiguous()
+        faces = faces.permute(0, 3, 1, 2).contiguous()
+
+        # print(faces.shape)
+        # print(eyesLeft.shape)
+        # print(eyesRight.shape)
+
         xFace = self.faceModel(faces)
         xRect = self.rects_fc(rects)
         factor = torch.cat((xFace, xRect), 1)
@@ -204,14 +218,22 @@ class model(nn.Module):
 
 if __name__ == '__main__':
     m = model()
-    feature = {"left": torch.zeros(10,1, 36,60),
-                "right": torch.zeros(10,1, 36,60)
-                }
-    feature = {"faceImg": torch.zeros(10, 3, 224, 224), "leftEyeImg": torch.zeros(10, 3, 112, 112),
-               "rightEyeImg": torch.zeros(10, 3, 112, 112), "faceGridImg": torch.zeros(10, 12),
-               "label": torch.zeros(10, 2), "frame": "test.jpg"}
-    a = m(feature["leftEyeImg"], feature["rightEyeImg"], feature["faceImg"], feature["faceGridImg"])
+    # feature = {"left": torch.zeros(10,1, 36,60),
+    #             "right": torch.zeros(10,1, 36,60)
+    #             }
+    # feature = {"faceImg": torch.zeros(10, 3, 224, 224), "leftEyeImg": torch.zeros(10, 3, 112, 112),
+    #            "rightEyeImg": torch.zeros(10, 3, 112, 112), "faceGridImg": torch.zeros(10, 12),
+    #            "label": torch.zeros(10, 2), "frame": "test.jpg"}
+    # a = m(feature["leftEyeImg"], feature["rightEyeImg"], feature["faceImg"], feature["faceGridImg"])
     # print(a.shape)
     # from thop import profile
     # flops, params = profile(m,inputs=(feature["leftEyeImg"], feature["rightEyeImg"], feature["faceImg"], feature["faceGridImg"],))
     # print(f'FLOPs: {flops}')
+    
+    # m = model()
+    # feature = {"faceImg": torch.zeros(3, 224, 224), "leftEyeImg": torch.zeros(3, 112, 112),
+    #            "rightEyeImg": torch.zeros(3, 112, 112), "faceGridImg": torch.zeros(12),
+    #            "label": torch.zeros(2), "frame": "test.jpg"}
+    # a = m(feature["leftEyeImg"], feature["rightEyeImg"], feature["faceImg"], feature["faceGridImg"])
+    # print(a.shape)
+    

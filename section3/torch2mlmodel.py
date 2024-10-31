@@ -20,9 +20,9 @@ model.eval()
 
 # 创建一个虚拟的输入张量，大小需要和实际输入数据一致
 # example_input = torch.rand(1, 10)
-feature = {"faceImg": torch.zeros(10, 3, 224, 224), "leftEyeImg": torch.zeros(10, 3, 112, 112),
-            "rightEyeImg": torch.zeros(10, 3, 112, 112), "faceGridImg": torch.zeros(10, 12),
-            "label": torch.zeros(10, 2), "frame": "test.jpg"}
+feature = {"faceImg": torch.zeros( 224, 224, 3), "leftEyeImg": torch.zeros( 112, 112, 3),
+            "rightEyeImg": torch.zeros( 112, 112, 3), "faceGridImg": torch.zeros(12),
+            "label": torch.zeros(1, 2), "frame": "test.jpg"}
 # input_list = [feature["leftEyeImg"], feature["rightEyeImg"], feature["faceImg"], feature["faceGridImg"]]
 
 
@@ -41,7 +41,8 @@ mlmodel = ct.convert(
         ct.TensorType(name="faceImg", shape=feature["faceImg"].shape),
         ct.TensorType(name="faceGridImg", shape=feature["faceGridImg"].shape),        
         ]
+
     )
 
 # 保存 Core ML 模型
-mlmodel.save("aff_net.mlpackage")
+mlmodel.save("aff_net_ma.mlpackage")

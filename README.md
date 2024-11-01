@@ -242,3 +242,73 @@ gaze_heatmap = self.fc2(fc2_input)
 ---
 
 希望这些建议能帮助你解决在没有现成校准向量的数据集上训练个性化注视估计模型的问题。如果你有进一步的疑问或需要更详细的实施指导，请随时告诉我。
+
+
+
+
+
+
+
+为了将一个k位的二值向量作为可训练的参数进行优化，并确保其元素只能取0或1，你可以采用“离散化”的方法，将连续变量（比如浮点数）通过一些技巧映射为0或1的形式。具体来说，你可以考虑如下方法：
+
+1. **利用Sigmoid激活函数与二值化操作：**
+   - 定义一个浮点数张量 `w`，形状为 `[k]`，初始值可以随机或者通过其他方式初始化。
+   - 在前向传播过程中，将 `w` 映射到0或1，具体方式如下：
+     ```python
+     binary_vector = (torch.sigmoid(w) > 0.5).float()
+     ```
+     其中 `torch.sigmoid(w)` 将 `w` 的每个元素压缩到 `[0, 1]` 范围内，然后通过阈值 `0.5` 将其转换为0或1。
+   
+2. **梯度传播：**
+   - 直接使用上述的离散化操作会导致梯度为0，因此需要采取一种策略称为 **直通估计器（Straight-Through Estimator, STE）**。
+   - 在反向传播时，仍然对浮点数参数 `w` 进行梯度更新。你可以将离散化步骤放在前向传播中，而在反向传播时保持对 `w` 进行正常的梯度计算，从而实现梯度的传播。
+
+3. **实现代码示例：**
+   下面是一个实现这种方法的示例代码：
+   ```python
+   import torch
+   import torch.nn as nn
+   import torch.optim as optim
+
+   class BinaryVectorModel(nn.Module):
+       def __init__(self, k):
+           super(BinaryVectorModel, self).__init__()
+           # 使用浮点数来定义参数 w
+           self.w = nn.Parameter(torch.randn(k))
+
+       def forward(self):
+           # 使用 Sigmoid 和阈值 0.5 将 w 离散化为 0 或 1
+           binary_vector = (torch.sigmoid(self.w) > 0.5).float()
+           return binary_vector
+
+   # 定义模型和优化器
+   k = 10
+   model = BinaryVectorModel(k)
+   optimizer = optim.SGD(model.parameters(), lr=0.1)
+
+   # 假设我们有一个简单的损失函数
+   target = torch.ones(k)  # 希望优化的目标是全 1
+   criterion = nn.MSELoss()
+
+   # 训练步骤
+   for epoch in range(100):
+       optimizer.zero_grad()
+       output = model()
+       loss = criterion(output, target)
+       loss.backward()
+
+       # 使用梯度更新参数 w
+       optimizer.step()
+
+       print(f'Epoch {epoch+1}, Loss: {loss.item()}')
+
+   # 打印最终的二值向量
+   print("Optimized Binary Vector:", model.forward())
+   ```
+
+   在这个代码中：
+   - `self.w` 是浮点数参数，将被优化。
+   - 在 `forward()` 方法中，使用 `torch.sigmoid(self.w) > 0.5` 来得到一个0或1的二值化向量。
+   - 通过 `loss.backward()` 计算梯度，然后用 `optimizer.step()` 来更新 `w`。
+
+这种方法允许你在训练过程中优化一个浮点数参数，但在前向传播时强制使其二值化。通过直通估计器的方式，可以保持梯度传播，以实现二值向量的优化。

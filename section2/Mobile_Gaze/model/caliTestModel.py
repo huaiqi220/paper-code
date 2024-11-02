@@ -30,6 +30,17 @@ def getMobileNetV2CNN():
     return model
 
 
+class BinarizeSTE(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input):
+        # 在前向传播中，返回经过 sigmoid 离散化后的结果
+        return (torch.sigmoid(input) > 0.5).float()
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        # 在反向传播中，直接返回 grad_output，以保持梯度的传播
+        return grad_output
+
 """
 这是mobile_gaze的2D坐标版本，输出的是2D坐标
 """
@@ -92,8 +103,8 @@ class mobile_gaze_2d(nn.Module):
         fc1_input = torch.cat((face_feature, left_feature, right_feature, grid_feature), dim=1)
         fc1_output = self.fc1(fc1_input)
 
-        # 从 cali_vectors 中索引得到对应的校准向量
-        cali_forward = (torch.sigmoid(self.cali_vectors[user_id]) > 0.5).float()
+        # 使用 STE 方法对校准向量进行离散化
+        cali_forward = BinarizeSTE.apply(self.cali_vectors[user_id])
 
         # 将校准向量与 fc1 输出连接起来
         fc2_input = torch.cat((cali_forward, fc1_output), dim=1)

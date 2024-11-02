@@ -18,7 +18,7 @@ import config
 class loader(Dataset): 
   def __init__(self, path, root, header=True):
     self.lines = []
-    self.loaded_vectors = init_cali.load_vectors_from_file(config.GazeCapture_Cali_path)
+    # self.loaded_vectors = init_cali.load_vectors_from_file(config.GazeCapture_Cali_path)
     if isinstance(path, list):
       for i in path:
         # print(i)
@@ -48,8 +48,8 @@ class loader(Dataset):
     grid_path = line[3]
 
     point = line[4]
-    cali = self.loaded_vectors[int(cur_person_id)]
-    cali = torch.from_numpy(cali).type(torch.FloatTensor)
+    # cali = self.loaded_vectors[int(cur_person_id)]
+    # cali = torch.from_numpy(cali).type(torch.FloatTensor)
 
 
     label = np.array(point.split(",")).astype("float")
@@ -74,13 +74,14 @@ class loader(Dataset):
  
     grid = cv2.imread(os.path.join(self.root, grid_path), 0)
     grid = np.expand_dims(grid, 0)
+    # print(grid.shape)
 
     img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
             "right":torch.from_numpy(rimg).type(torch.FloatTensor),
             "face":torch.from_numpy(fimg).type(torch.FloatTensor),
             "grid":torch.from_numpy(grid).type(torch.FloatTensor),
-            "name":str(cur_person_id),
-            "cali":cali,
+            "name":int(cur_person_id),
+            # "cali":cali,
             # "rects":rect,
             "label":label,
             "poglabel":poglabel,

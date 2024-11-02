@@ -15,6 +15,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 torch.autograd.set_detect_anomaly(True)
 
 from model import Mobile_Gaze
+from model import caliTestModel
 from torch.cuda.amp import autocast
 from util import htools
 import logging
@@ -43,8 +44,8 @@ def trainModel():
 
     dataset = reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
                              num_workers=8)
-    
-    ddp_model = Mobile_Gaze.mobile_gaze_hm(config.hm_size, 8, 25 * 25).to(rank)
+    ddp_model = caliTestModel.mobile_gaze_2d(config.hm_size, 12, 25 * 25).to(rank)
+    # ddp_model = Mobile_Gaze.mobile_gaze_hm(config.hm_size, 8, 25 * 25).to(rank)
     device = torch.device("cuda" + ":" + str(rank))
     ddp_model = DDP(ddp_model)
 
@@ -72,19 +73,22 @@ def trainModel():
                     data["left"] = data["left"].to(device)
                     data["right"] = data["right"].to(device)
                     data["grid"] = data["grid"].to(device)
-                    data["cali"] = data["cali"].to(device)
+                    # data["cali"] = data["cali"].to(device)
                     data["label"] = data["label"].to(device)
                     data["poglabel"] = data["poglabel"].to(device)
-                    c, gaze_out = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["cali"])
+                    data["name"] = data["name"].to(device)
+                    gaze_out = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["name"])
+                    loss = nn.MSELoss()(gaze_out, data["poglabel"])
+                    # c, gaze_out = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["cali"])
                     # loss = loss_func.heatmap_loss(gaze_heatmap, data["label"]) + config.loss_alpha * cali_loss(c,data["cali"])
                     # loss = hm_loss(gaze_heatmap, data["label"]) + config.loss_alpha * cali_loss(c, data["cali"])
                     # loss = d2_loss(gaze_out,data["poglabel"]) + config.loss_alpha * cali_loss(c, data["cali"])
-                    loss = loss_func.heatmap_loss(data["label"],gaze_out) + config.loss_alpha * cali_loss(c, data["cali"])
+                    # loss = loss_func.heatmap_loss(data["label"],gaze_out) + config.loss_alpha * cali_loss(c, data["cali"])
 
                     """绘制heatmap，仅heatmap输出才解注释"""
-                    file_name = str(time.time())
-                    htools.save_first_image(gaze_out,file_name + "_out.png" )
-                    htools.save_first_image(data["label"], file_name + "_label.png" )
+                    # file_name = str(time.time())
+                    # htools.save_first_image(gaze_out,file_name + "_out.png" )
+                    # htools.save_first_image(data["label"], file_name + "_label.png" )
                     
 
 

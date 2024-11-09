@@ -131,10 +131,10 @@ def cali_test_func(root_path, label):
     '''
     返回三个数字：校准前error，训练loss，校准后error
     '''
-    rank = 0
+    rank = 1
 
     cur_id = label.split("/")[-1].split(".")[0]
-    cali_folder = os.path.join(config.test_save_path,cur_id)
+    cali_folder = os.path.join(config.test_save_path, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer), cur_id)
 
     all_label = []
     with open(label, "r") as f:
@@ -142,7 +142,7 @@ def cali_test_func(root_path, label):
         all_label.pop(0)
 
     # 部分用户采集图片很少
-    if len(all_label) < config.cali_image_num:
+    if len(all_label) <= config.cali_image_num:
         print("该用户数据较少，跳过测试")
         return
 

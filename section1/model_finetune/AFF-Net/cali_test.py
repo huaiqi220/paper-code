@@ -141,6 +141,11 @@ def cali_test_func(root_path, label):
         all_label = f.readlines()
         all_label.pop(0)
 
+    # 部分用户采集图片很少
+    if len(all_label) < config.cali_image_num:
+        print("该用户数据较少，跳过测试")
+        return
+
     selected_cali_lines = random.sample(all_label, config.cali_image_num)
 
     remaining_lines = [line for line in all_label if line not in selected_cali_lines]

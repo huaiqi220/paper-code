@@ -9,7 +9,7 @@ lr_decay_start_step = 8
 lr_decay_cycle = 2
 
 '''data path'''
-GazeCapture_root = "/data/4_gc/2_gcout/"
+GazeCapture_root = "/home/hi/zhuzi/data/GCOutput/"
 MPIIFaceGaze_root = "/data/5_mp/mpiifg/"
 
 cur_dataset = "GazeCapture"
@@ -23,7 +23,7 @@ test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/zhuzi/code/2024-5/paper-code/section1/model_finetune/AFF-Net/checkpoint/GazeCapture/256_16_0.001/Iter_16_AFF-Net.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section1/model_finetune/AFF-Net/Iter_16_AFF-Net.pt"
 test_begin_step = 8
 test_end_step = 12
 save_steps = 1
@@ -36,7 +36,9 @@ cali_epoch = 8
 cali_lr = 1e-5
 cali_last_layer = False
 
-cali_image_num = 45
+# k =  4 * c
+cali_image_num = 24
+
 
 
 

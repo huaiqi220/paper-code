@@ -16,12 +16,15 @@ torch.autograd.set_detect_anomaly(True)
 
 from model import Mobile_Gaze
 from model import caliTestModel
-from torch.cuda.amp import autocast
+# from torch.cuda.amp import autocast
+from torch.amp import autocast
 from util import htools
 import logging
 
 '''
 torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 main.py
+
+torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 main.py
 
 '''
 
@@ -68,7 +71,7 @@ def trainModel():
             time_begin = time.time()
             for i, data in enumerate(dataset):
                 optimizer.zero_grad()
-                with autocast():
+                with autocast(device_type="cuda"):
                     data["face"] = data["face"].to(device)
                     data["left"] = data["left"].to(device)
                     data["right"] = data["right"].to(device)
@@ -103,7 +106,7 @@ def trainModel():
                 sys.stdout.flush()
                 outfile.flush()
 
-            if epoch > config.save_start_step and epoch % config.save_step == 0  and rank == 0:
+            if epoch >= config.save_start_step and epoch % config.save_step == 0  and rank == 0:
                 torch.save(ddp_model.state_dict(), os.path.join(save_path, f"Iter_{epoch}_{model_name}.pt"))
 
 

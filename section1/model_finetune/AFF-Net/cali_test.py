@@ -175,7 +175,7 @@ if __name__ == "__main__":
     elif config.cur_dataset == "MPIIFaceGaze":
         root_path = config.MPIIFaceGaze_root
     
-    test_label_path = os.path.join(root_path,"Label","test")
+    test_label_path = os.path.join(root_path,"Label","model_fineture","test")
     label_list = [os.path.join(test_label_path, item) for item in os.listdir(test_label_path)]
     for label in label_list:
         res = cali_test_func(root_path, label)

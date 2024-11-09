@@ -17,23 +17,23 @@ hm_level = 4
 
 
 '''Data params'''
-batch_size = 96
-epoch = 60
+batch_size = 128
+epoch = 24
 lr = 1e-3
 train_decay_rate = 0.7
 '''从第几epoch开始调整lr'''
-lr_decay_start_step = 30
-lr_decay_cycle = 10
+lr_decay_start_step = 16
+lr_decay_cycle = 2
 
 '''data path'''
-GazeCapture_root = "/data/4_gc/2_gcout/"
+GazeCapture_root = "/home/hi/zhuzi/data/GCOutput/"
 MPIIFaceGaze_root = "/data/5_mp/mpiifg/"
-GazeCapture_Cali_path = "/home/zhuzi/code/2024-5/paper-code/Learning_to_Personalize_in_Appearance-Based_Gaze_Tracking/dataloader/calibration_vectors.json"
+GazeCapture_Cali_path = "not use"
 
 '''save path'''
 save_path = "./checkpoint"
 model_name = "MobileNetV2-Gaze"
-save_start_step = 50
+save_start_step = 20
 save_step = 2
 
 

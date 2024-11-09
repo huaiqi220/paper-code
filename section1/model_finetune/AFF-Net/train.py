@@ -16,7 +16,7 @@ import logging
 
 
 '''
-torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
+torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
 
 '''
 
@@ -41,16 +41,16 @@ def trainModel():
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    label_path = os.path.join(root_path,"Label", "train")
+    label_path = os.path.join(root_path,"Label","model_fineture", "train")
     label_path = [os.path.join(label_path, item) for item in os.listdir(label_path)]
 
 
     if config.cur_dataset == "GazeCapture":
         dataset = gc_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
-                                num_workers=8)
+                                num_workers=4)
     elif config.cur_dataset == "MPII":
         dataset = mpii_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
-                                num_workers=8)
+                                num_workers=4)
     
     ddp_model = model().to(rank)
     device = torch.device("cuda" + ":" + str(rank))

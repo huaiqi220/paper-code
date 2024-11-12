@@ -16,7 +16,7 @@ import logging
 
 
 '''
-torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
+torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29402 train.py
 
 '''
 
@@ -41,7 +41,7 @@ def trainModel():
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    label_path = os.path.join(root_path,"Label", "train")
+    label_path = os.path.join(root_path,"Label","K_Fold_norm","2", "train")
     label_path = [os.path.join(label_path, item) for item in os.listdir(label_path)]
 
 

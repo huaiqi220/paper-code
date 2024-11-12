@@ -69,28 +69,22 @@ class loader(Dataset):
     line = self.lines[idx]
     line = line.strip().split(" ")
 
-    name = str(line[0].split("/")[0])
+    name = line[0]
     # device = line[5]
-    point = line[6]
-
-    ratio = line[9].split(",")
-
-    label = np.array(point.split(",")).astype("float")
-    ratio = np.array(ratio).astype("float")
-    label = label*ratio*0.1
-    label = torch.from_numpy(label).type(torch.FloatTensor)
-    # faceb = line[6].split(",")
-    # leftb = line[7].split(",")
-    # rightb = line[8].split(",")
-    rect = [float(p) for p in line[13].split(",")]
-    # bbox = faceb + leftb + rightb
+    point = line[4]
+    faceb = line[6].split(",")
+    leftb = line[7].split(",")
+    rightb = line[8].split(",")
+    bbox = faceb + leftb + rightb
     face = line[0]
-    # full = line[1]
     lefteye = line[1]
     righteye = line[2]
     grid = line[3]
 
-    rect = np.array(rect).astype("float")
+    label = np.array(point.split(",")).astype("float")
+    label = torch.from_numpy(label).type(torch.FloatTensor)
+
+    rect = np.array(bbox).astype("float")
     rect = torch.from_numpy(rect).type(torch.FloatTensor)
 
     rimg = cv2.imread(os.path.join(self.root, righteye))
@@ -106,13 +100,12 @@ class loader(Dataset):
     fimg = fimg.transpose(2, 0, 1)
  
     grid = cv2.imread(os.path.join(self.root, grid), 0)
-    # grid = cv2.resize(grid, (112, 112))/255.0
     grid = np.expand_dims(grid, 0)
 
     img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
             "right":torch.from_numpy(rimg).type(torch.FloatTensor),
             "face":torch.from_numpy(fimg).type(torch.FloatTensor),
-            "grid":torch.from_numpy(grid).type(torch.FloatTensor),
+            # "grid":torch.from_numpy(grid).type(torch.FloatTensor),
             "name":name,
             "rects":rect,
             "label":label,
@@ -120,40 +113,34 @@ class loader(Dataset):
 
     return img
 
-class caliloader(Dataset):
+class caliloader(Dataset): 
   def __init__(self, lines, root, header=True):
     self.lines = lines
     self.root = root
-  
+
   def __len__(self):
     return len(self.lines)
-  
+
   def __getitem__(self, idx):
     line = self.lines[idx]
     line = line.strip().split(" ")
 
-    name = str(line[0].split("/")[0])
+    name = line[0]
     # device = line[5]
-    point = line[6]
-
-    ratio = line[9].split(",")
-
-    label = np.array(point.split(",")).astype("float")
-    ratio = np.array(ratio).astype("float")
-    label = label*ratio*0.1
-    label = torch.from_numpy(label).type(torch.FloatTensor)
-    # faceb = line[6].split(",")
-    # leftb = line[7].split(",")
-    # rightb = line[8].split(",")
-    rect = [float(p) for p in line[13].split(",")]
-    # bbox = faceb + leftb + rightb
+    point = line[4]
+    faceb = line[6].split(",")
+    leftb = line[7].split(",")
+    rightb = line[8].split(",")
+    bbox = faceb + leftb + rightb
     face = line[0]
-    # full = line[1]
     lefteye = line[1]
     righteye = line[2]
     grid = line[3]
 
-    rect = np.array(rect).astype("float")
+    label = np.array(point.split(",")).astype("float")
+    label = torch.from_numpy(label).type(torch.FloatTensor)
+
+    rect = np.array(bbox).astype("float")
     rect = torch.from_numpy(rect).type(torch.FloatTensor)
 
     rimg = cv2.imread(os.path.join(self.root, righteye))
@@ -169,36 +156,42 @@ class caliloader(Dataset):
     fimg = fimg.transpose(2, 0, 1)
  
     grid = cv2.imread(os.path.join(self.root, grid), 0)
-    # grid = cv2.resize(grid, (112, 112))/255.0
     grid = np.expand_dims(grid, 0)
 
     img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
             "right":torch.from_numpy(rimg).type(torch.FloatTensor),
             "face":torch.from_numpy(fimg).type(torch.FloatTensor),
-            "grid":torch.from_numpy(grid).type(torch.FloatTensor),
+            # "grid":torch.from_numpy(grid).type(torch.FloatTensor),
             "name":name,
             "rects":rect,
             "label":label,
             "device": "Android"}
 
     return img
+
+
+
+
 
 def txtload(labelpath, imagepath, batch_size, shuffle=True, num_workers=0, header=True):
   # print(labelpath)
   # print(imagepath)
   dataset = loader(labelpath, imagepath, header)
-  # distributed_sampler = DistributedSampler(dataset)
+  distributed_sampler = DistributedSampler(dataset)
   print(f"[Read Data]: Total num: {len(dataset)}")
-  # load = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,sampler=distributed_sampler,pin_memory=True)
-  load = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers,pin_memory=True)
+  load = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,sampler=distributed_sampler,pin_memory=True)
+  # load = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
   return load
-
 
 def calitxtload(lines, imagepath, batch_size, shuffle=True, num_workers=0, header=True):
   dataset = caliloader(lines, imagepath, header)
   print(f"[Read Data]: Total num: {len(dataset)}")
   load = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,shuffle=shuffle,pin_memory=True)
   return load
+
+
+
+
 
 if __name__ == "__main__":
   label = "/data/4_gc/2_gcout/Label/train"

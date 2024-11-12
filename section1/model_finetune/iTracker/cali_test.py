@@ -134,23 +134,38 @@ def cali_test_func(root_path, label):
     rank = config.cali_rank
 
     cur_id = label.split("/")[-1].split(".")[0]
-    cali_folder = os.path.join(config.test_save_path,cur_id)
+    cali_folder = os.path.join(config.test_save_path,config.cur_dataset, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer), cur_id)
 
     all_label = []
     with open(label, "r") as f:
         all_label = f.readlines()
         all_label.pop(0)
 
+    # 部分用户采集图片很少
+    if len(all_label) <= config.cali_image_num:
+        print("该用户数据较少，跳过测试")
+        return
+    
     if len(all_label) < 200 or len(all_label) < config.cali_image_num:
         print(f"Error: {label} has too few data")
         return
+    
     selected_cali_lines = random.sample(all_label, config.cali_image_num)
 
     remaining_lines = [line for line in all_label if line not in selected_cali_lines]
+    if len(remaining_lines) < 10:
+        print("该用户数据较少，跳过测试")
+        return 
+    
     if config.cur_dataset == "GazeCapture":
         all_test_dataset = gc_reader.calitxtload(all_label,os.path.join(root_path,"Image"),32,True,8,True)
         cali_train_dataset = gc_reader.calitxtload(selected_cali_lines,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)
         cali_test_dataset = gc_reader.calitxtload(remaining_lines,os.path.join(root_path,"Image"),32,True,8,True)
+    
+    if config.cur_dataset == "MPII":
+        all_test_dataset = mpii_reader.calitxtload(all_label,os.path.join(root_path,"Image"),32,True,8,True)
+        cali_train_dataset = mpii_reader.calitxtload(selected_cali_lines,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)
+        cali_test_dataset = mpii_reader.calitxtload(remaining_lines,os.path.join(root_path,"Image"),32,True,8,True)
 
     test_model_path = config.test_model_path
     calimodel = model()
@@ -175,10 +190,10 @@ def cali_test_func(root_path, label):
 if __name__ == "__main__":
     if config.cur_dataset == "GazeCapture":
         root_path = config.GazeCapture_root
-    elif config.cur_dataset == "MPIIFaceGaze":
+    elif config.cur_dataset == "MPII":
         root_path = config.MPIIFaceGaze_root
     
-    test_label_path = os.path.join(root_path,"Label","test")
+    test_label_path = os.path.join(root_path,"Label","K_Fold_norm","2","test")
     label_list = [os.path.join(test_label_path, item) for item in os.listdir(test_label_path)]
     for label in label_list:
         res = cali_test_func(root_path, label)

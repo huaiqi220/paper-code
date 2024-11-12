@@ -14,7 +14,6 @@ import np2torchdata as n2t
 import sys
 
 
-
 def test_heatmap(ddp_model,dots_val,regions_val,df_info_val,dots_train,regions_train,df_info_train,rank):
     # df_pred_scopes = losses.get_pred_scope(df_info_train, regions_train,
     #                                     dots_train, df_info_val)

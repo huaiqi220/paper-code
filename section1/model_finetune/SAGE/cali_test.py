@@ -6,7 +6,7 @@ import random
 from dataloader import gc_reader
 from dataloader import mpii_reader
 import logging
-from model import model
+from model import SAGE as model
 import math
 import torch.nn as nn
 import time
@@ -18,7 +18,7 @@ def dis(p1, p2):
 
 
 def test_func(name, calimodel, dataset,save_path,rank,cali_test):
-    print(calimodel)
+    # print(calimodel)
     if cali_test:
         save_path = os.path.join(save_path,"calibration_test")
     else:
@@ -43,7 +43,7 @@ def test_func(name, calimodel, dataset,save_path,rank,cali_test):
                 data["rects"] = data["rects"].to(device)
                 labels = data["label"]
                 # data["poglabel"] = data["poglabel"].to(device)
-                gazes = calimodel(data["left"], data["right"], data["face"], data["rects"])
+                gazes = calimodel(data["left"], data["right"], data["rects"])
 
                 print(f'\r[Batch : {j}]', end='')
                 #print(f'gazes: {gazes.shape}')
@@ -75,7 +75,9 @@ def cali_train_func(name,calimodel,dataset,save_path,rank):
     if config.cali_last_layer:
         for param in calimodel.parameters():
             param.requires_grad = False
-        for param in calimodel.fc.parameters():
+        for param in calimodel.fc4.parameters():
+            param.requires_grad = True
+        for param in calimodel.fc5.parameters():
             param.requires_grad = True
 
 
@@ -106,7 +108,7 @@ def cali_train_func(name,calimodel,dataset,save_path,rank):
                     data["rects"] = data["rects"].to(device)
                     data["label"] = data["label"].to(device)
                     # data["poglabel"] = data["poglabel"].to(device)
-                    gaze_out = calimodel(data["left"], data["right"], data["face"], data["rects"])
+                    gaze_out = calimodel(data["left"], data["right"], data["rects"])
                     loss = loss_func(gaze_out, data["label"])        
 
 
@@ -131,10 +133,10 @@ def cali_test_func(root_path, label):
     '''
     返回三个数字：校准前error，训练loss，校准后error
     '''
-    rank = 4
+    rank = 5
 
     cur_id = label.split("/")[-1].split(".")[0]
-    cali_folder = os.path.join(config.test_save_path,config.cur_dataset, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer), cur_id)
+    cali_folder = os.path.join(config.test_save_path,config.cur_dataset,config.cur_fold, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer), cur_id)
 
     all_label = []
     with open(label, "r") as f:
@@ -190,7 +192,7 @@ if __name__ == "__main__":
     elif config.cur_dataset == "MPII":
         root_path = config.MPIIFaceGaze_root
     
-    test_label_path = os.path.join(root_path,"Label","K_Fold_norm","2","test")
+    test_label_path = os.path.join(root_path,"Label","K_Fold_norm",config.cur_fold, "test")
     label_list = [os.path.join(test_label_path, item) for item in os.listdir(test_label_path)]
     for label in label_list:
         res = cali_test_func(root_path, label)

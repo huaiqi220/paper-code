@@ -25,3 +25,6 @@ __pycache__/*
 */evaluation/*
 *.log
 */*.log
+*/checkpoint/*
+*/*_log
+*/train_log

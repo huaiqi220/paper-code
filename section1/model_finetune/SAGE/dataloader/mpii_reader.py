@@ -82,7 +82,7 @@ class loader(Dataset):
     # faceb = line[6].split(",")
     # leftb = line[7].split(",")
     # rightb = line[8].split(",")
-    rect = [float(p) for p in line[13].split(",")]
+    rect = [float(p) for p in line[13].split(",")][4:]
     # bbox = faceb + leftb + rightb
     face = line[0]
     # full = line[1]
@@ -94,11 +94,11 @@ class loader(Dataset):
     rect = torch.from_numpy(rect).type(torch.FloatTensor)
 
     rimg = cv2.imread(os.path.join(self.root, righteye))
-    rimg = cv2.resize(rimg, (112, 112))/255.0
+    rimg = cv2.resize(rimg, (64, 64))/255.0
     rimg = rimg.transpose(2, 0, 1)
 
     limg = cv2.imread(os.path.join(self.root, lefteye))
-    limg = cv2.resize(limg, (112, 112))/255.0
+    limg = cv2.resize(limg, (64, 64))/255.0
     limg = limg.transpose(2, 0, 1)
     
     fimg = cv2.imread(os.path.join(self.root, face))
@@ -145,7 +145,7 @@ class caliloader(Dataset):
     # faceb = line[6].split(",")
     # leftb = line[7].split(",")
     # rightb = line[8].split(",")
-    rect = [float(p) for p in line[13].split(",")]
+    rect = [float(p) for p in line[13].split(",")][4:]
     # bbox = faceb + leftb + rightb
     face = line[0]
     # full = line[1]
@@ -157,11 +157,11 @@ class caliloader(Dataset):
     rect = torch.from_numpy(rect).type(torch.FloatTensor)
 
     rimg = cv2.imread(os.path.join(self.root, righteye))
-    rimg = cv2.resize(rimg, (112, 112))/255.0
+    rimg = cv2.resize(rimg, (64, 64))/255.0
     rimg = rimg.transpose(2, 0, 1)
 
     limg = cv2.imread(os.path.join(self.root, lefteye))
-    limg = cv2.resize(limg, (112, 112))/255.0
+    limg = cv2.resize(limg, (64, 64))/255.0
     limg = limg.transpose(2, 0, 1)
     
     fimg = cv2.imread(os.path.join(self.root, face))

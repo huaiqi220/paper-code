@@ -75,7 +75,9 @@ class loader(Dataset):
     faceb = line[6].split(",")
     leftb = line[7].split(",")
     rightb = line[8].split(",")
-    bbox = faceb + leftb + rightb
+    # bbox = faceb + leftb + rightb
+    # 针对SAGE的8维输入
+    bbox = leftb + rightb
     face = line[0]
     lefteye = line[1]
     righteye = line[2]
@@ -88,11 +90,11 @@ class loader(Dataset):
     rect = torch.from_numpy(rect).type(torch.FloatTensor)
 
     rimg = cv2.imread(os.path.join(self.root, righteye))
-    rimg = cv2.resize(rimg, (112, 112))/255.0
+    rimg = cv2.resize(rimg, (64, 64))/255.0
     rimg = rimg.transpose(2, 0, 1)
 
     limg = cv2.imread(os.path.join(self.root, lefteye))
-    limg = cv2.resize(limg, (112, 112))/255.0
+    limg = cv2.resize(limg, (64, 64))/255.0
     limg = limg.transpose(2, 0, 1)
     
     fimg = cv2.imread(os.path.join(self.root, face))
@@ -131,7 +133,9 @@ class caliloader(Dataset):
     faceb = line[6].split(",")
     leftb = line[7].split(",")
     rightb = line[8].split(",")
-    bbox = faceb + leftb + rightb
+    # bbox = faceb + leftb + rightb
+    # 针对SAGE的8维输入
+    bbox = leftb + rightb
     face = line[0]
     lefteye = line[1]
     righteye = line[2]
@@ -144,11 +148,11 @@ class caliloader(Dataset):
     rect = torch.from_numpy(rect).type(torch.FloatTensor)
 
     rimg = cv2.imread(os.path.join(self.root, righteye))
-    rimg = cv2.resize(rimg, (112, 112))/255.0
+    rimg = cv2.resize(rimg, (64, 64))/255.0
     rimg = rimg.transpose(2, 0, 1)
 
     limg = cv2.imread(os.path.join(self.root, lefteye))
-    limg = cv2.resize(limg, (112, 112))/255.0
+    limg = cv2.resize(limg, (64, 64))/255.0
     limg = limg.transpose(2, 0, 1)
     
     fimg = cv2.imread(os.path.join(self.root, face))

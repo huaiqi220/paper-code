@@ -2,9 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 #from Torch.ntools import AlexNet
-import math
-import torchvision
-
 
 import torch
 import torch.nn as nn
@@ -34,7 +31,7 @@ class SAGE(nn.Module):
         
         # Concatenate left and right eye features
         combined_features = torch.cat((left_eye, right_eye), dim=1)
-        print(combined_features.shape)
+        # print(combined_features.shape)
         # Flatten for fully connected layers
         x = combined_features.view(combined_features.size(0), -1)
         # print(x.shape)

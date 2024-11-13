@@ -10,7 +10,7 @@ import sys
 import config
 from torch.nn.parallel import DistributedDataParallel as DDP
 torch.autograd.set_detect_anomaly(True)
-from model import model
+from model import SAGE as model
 from torch.cuda.amp import autocast
 import logging
 
@@ -36,12 +36,12 @@ def trainModel():
 
     
     model_name = config.model_name
-    save_path = os.path.join(config.save_path,config.cur_dataset,
+    save_path = os.path.join(config.save_path,config.cur_dataset,config.cur_fold,
                              str(config.batch_size) +"_" + str(config.epoch) + "_" + str(config.lr))
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    label_path = os.path.join(root_path,"Label","K_Fold_norm","2", "train")
+    label_path = os.path.join(root_path,"Label","K_Fold_norm",config.cur_fold, "train")
     label_path = [os.path.join(label_path, item) for item in os.listdir(label_path)]
 
 
@@ -83,7 +83,7 @@ def trainModel():
                     data["rects"] = data["rects"].to(device)
                     data["label"] = data["label"].to(device)
                     # data["poglabel"] = data["poglabel"].to(device)
-                    gaze_out = ddp_model(data["left"], data["right"], data["face"], data["rects"])
+                    gaze_out = ddp_model(data["left"], data["right"], data["rects"])
                     loss = loss_func(gaze_out, data["label"])        
 
 

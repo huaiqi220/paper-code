@@ -9,7 +9,7 @@ from math import exp, sqrt, pi
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import util.htools as htools
-import config
+import config_bk
 
 
 

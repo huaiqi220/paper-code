@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 
-import config
+import config_bk
 import torch.nn.functional as F
 
 class ResNet18Conv(nn.Module):
@@ -151,9 +151,9 @@ class mobile_gaze_hm(nn.Module):
             nn.Linear(128,128),
             nn.ReLU(),
             nn.BatchNorm1d(128),
-            nn.Linear(128,int(config.hm_size**2/4)),
+            nn.Linear(128,int(config_bk.hm_size**2/4)),
             nn.ReLU(),
-            nn.BatchNorm1d(int(config.hm_size**2/4))
+            nn.BatchNorm1d(int(config_bk.hm_size**2/4))
         )
         self.fc2_hm_conv1 = nn.Conv2d(1, 1, kernel_size=(7, 7), padding=3) 
         self.fc2_hm_conv2 = nn.Sequential(
@@ -171,7 +171,7 @@ class mobile_gaze_hm(nn.Module):
         c, fc1_output = torch.split(fc1_output, [self.cali_shape, 512], dim=1)
         fc2_input = torch.cat((cali, fc1_output), dim=1)
         gaze_heatmap = self.fc2_hm_l1(fc2_input)
-        gaze_heatmap = gaze_heatmap.view(-1,1,int(config.hm_size/2), int(config.hm_size/2))
+        gaze_heatmap = gaze_heatmap.view(-1,1,int(config_bk.hm_size/2), int(config_bk.hm_size/2))
         gaze_heatmap = self.fc2_hm_conv1(gaze_heatmap)
         gaze_heatmap = F.interpolate(gaze_heatmap,scale_factor=2,mode='bilinear',align_corners=False)
         gaze_heatmap = self.fc2_hm_conv2(gaze_heatmap)

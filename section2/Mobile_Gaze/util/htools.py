@@ -2,7 +2,7 @@ import numpy as np
 from math import exp, sqrt, pi
 import torch
 from torch.functional import F
-import config
+import config_bk
 import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 from PIL import Image
@@ -36,27 +36,27 @@ def pog2heatmap(label):
     #                                   int(label[0]*scale+hm_size/2-hmFocus_size/2),
     #                                   int(label[1]*scale+hm_size/2-hmFocus_size/2),
     #                                   hm_size, hm_size)
-    heatmap_im = HM_FOCUS_IM[config.hm_level, :, :, :].astype(np.float32)
+    heatmap_im = HM_FOCUS_IM[config_bk.hm_level, :, :, :].astype(np.float32)
     heatmap_im = heatmap_im.transpose(2, 0, 1)
     heatmap_im = torch.from_numpy(heatmap_im)
 
     # Calculate padding values
     # print(label)
-    y_center = label[1] * config.scale
+    y_center = label[1] * config_bk.scale
     if y_center > 64:
         y_center = 64
     if y_center < -64:
         y_center = -64
-    x_center = label[0] * config.scale
+    x_center = label[0] * config_bk.scale
     if x_center > 64:
         x_center = 64
     if x_center < -64:
         x_center = -64
-    pad_top = int(y_center + config.hm_size / 2 - hmFocus_size / 2)
-    pad_left = int(x_center + config.hm_size / 2 - hmFocus_size / 2)  
+    pad_top = int(y_center + config_bk.hm_size / 2 - hmFocus_size / 2)
+    pad_left = int(x_center + config_bk.hm_size / 2 - hmFocus_size / 2)  
     # Since PyTorch's pad function takes padding as (left, right, top, bottom), calculate these values
-    pad_bottom = config.hm_size - (pad_top + heatmap_im.shape[1])
-    pad_right = config.hm_size - (pad_left + heatmap_im.shape[2])
+    pad_bottom = config_bk.hm_size - (pad_top + heatmap_im.shape[1])
+    pad_right = config_bk.hm_size - (pad_left + heatmap_im.shape[2])
     
     # Apply padding
     # print(pad_left, pad_right, pad_top, pad_bottom)

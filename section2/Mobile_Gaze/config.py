@@ -1,4 +1,8 @@
 
+commit = "尝试tanh替换sigmoid"
+
+
+
 
 ''' super params '''
 k = 12
@@ -18,11 +22,11 @@ hm_level = 4
 
 '''Data params'''
 batch_size = 128
-epoch = 32
+epoch = 12
 lr = 1e-3
 train_decay_rate = 0.1
 '''从第几epoch开始调整lr'''
-lr_decay_start_step = 24
+lr_decay_start_step = 6
 lr_decay_cycle = 2
 
 '''data path'''
@@ -34,7 +38,7 @@ cur_dataset = "GazeCapture"
 '''save path'''
 save_path = "./checkpoint"
 model_name = "MobileNetV2-Gaze-PoG"
-save_start_step = 24
+save_start_step = 6
 save_step = 2
 test_save_path = "./evaluation"
 

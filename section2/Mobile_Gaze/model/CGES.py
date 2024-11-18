@@ -1,32 +1,11 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
-
+from model import STE
 import config
 import torch.nn.functional as F
 
-class BinarizeSTEWithL2(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, input):
-        # 在前向传播中，返回经过 sigmoid 离散化后的结果
-        sigmoid_output = torch.sigmoid(input)
-        binary_output = (sigmoid_output > 0.5).float()
-        ctx.save_for_backward(sigmoid_output)  # 保存前向传播时的 sigmoid 结果以用于反向传播
-        return binary_output
 
-    @staticmethod
-    def backward(ctx, grad_output):
-        sigmoid_output, = ctx.saved_tensors
-        # L2 惩罚项梯度的部分
-
-        scale = 0.9
-        l2_penalty_gradient = 2 * (sigmoid_output - 0.5)
-        # 根据 sigmoid_output 调整梯度，增加向 0.5 的靠拢
-        adjustment_factor = torch.where(sigmoid_output > 0.5, -l2_penalty_gradient, l2_penalty_gradient)
-        # 最终的梯度是原始的 grad_output 加上调整因子后的值
-        adjusted_grad = scale * (grad_output + adjustment_factor)
-        # 返回调整后的梯度
-        return adjusted_grad
 
 def getMobileNetV2CNN():
     model = models.mobilenet_v2(pretrained=True)
@@ -117,7 +96,7 @@ class mobile_gaze_2d(nn.Module):
 
         # 使用 STE 方法对校准向量进行离散化
         if mode == "train":
-            cali_forward = BinarizeSTEWithL2.apply(self.cali_vectors[user_id])
+            cali_forward = STE.BinarizeSTE.apply(self.cali_vectors[user_id])
         elif mode == "inference":
             # 这里的写法，推理一个batchsize数据必须来自同一个人
             cali_vec = cali_vec.expand(face.shape[0], -1)

@@ -37,7 +37,7 @@ def trainModel():
 
     
     model_name = config.model_name
-    save_path = os.path.join(config.save_path,config.cur_dataset,
+    save_path = os.path.join(config.save_path,config.cur_dataset,config.commit,
                              str(config.batch_size) +"_" + str(config.epoch) + "_" + str(config.lr))
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -76,7 +76,7 @@ def trainModel():
             time_begin = time.time()
             for i, data in enumerate(dataset):
                 optimizer.zero_grad()
-                with autocast():
+                with torch.amp.autocast("cuda"):
                     data["face"] = data["face"].to(device)
                     data["left"] = data["left"].to(device)
                     data["right"] = data["right"].to(device)

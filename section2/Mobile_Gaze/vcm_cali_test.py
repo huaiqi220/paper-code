@@ -325,6 +325,22 @@ def cali_test_func(root_path, label):
         new_key = key[7:]
         new_state_dict[new_key] = value
     calimodel.load_state_dict(new_state_dict)
+    # print(calimodel.cali_vectors)
+
+    id_path = "/home/hi/zhuzi/data/GCOutput/Label/model_fineture/train"
+    file_list = os.listdir(id_path)
+    file_list = [file.split(".")[0] for file in file_list]
+    lines = calimodel.cali_vectors
+    with open("log.txt", "w") as f:
+        f.write("2D Tensor:\n")
+        for id in file_list:
+            id = int(id)
+            sigmoid_output = torch.sigmoid(lines[id])
+            binary_output = (sigmoid_output > 0.5).float()
+            f.write(str(id) + " " + str(binary_output) + '\n')
+        # f.write(str())  # 将 Tensor 转为 numpy 数组并写入
+        f.write("\n")
+    f.close()
     device = torch.device("cuda" + ":" + str(rank))   
 
     # 首先测试这个校准模型在校准数据集上的未校准性能

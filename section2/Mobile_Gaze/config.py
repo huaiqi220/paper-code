@@ -60,7 +60,7 @@ binary
 cali_vector_type = "binary"
 
 # k =  4 * c
-cali_image_num = 75
+cali_image_num = 150
 
 cur_rank = 4
 

@@ -96,7 +96,7 @@ class mobile_gaze_2d(nn.Module):
 
         # 使用 STE 方法对校准向量进行离散化
         if mode == "train":
-            cali_forward = STE.BinarizeSTE.apply(self.cali_vectors[user_id])
+            cali_forward = STE.BinarizeSTE_origin.apply(self.cali_vectors[user_id])
         elif mode == "inference":
             # 这里的写法，推理一个batchsize数据必须来自同一个人
             cali_vec = cali_vec.expand(face.shape[0], -1)

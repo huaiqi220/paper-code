@@ -2,6 +2,11 @@ import torch
 import torch.nn as nn
 
 
+
+
+
+
+
 def heatmap_loss(y_true, y_pred):
     if torch.sum(y_pred) == 0:
         return torch.tensor(1.0)

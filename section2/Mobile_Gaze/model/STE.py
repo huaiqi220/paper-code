@@ -1,5 +1,20 @@
 import torch
 
+class BinarizeSTE_origin(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input):
+        # 直接对输入进行二值化，输出为 0 或 1
+        binary_output = (input >= 0).float()
+        return binary_output
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        # 在反向传播中，梯度直接传递
+        grad_input = grad_output.clone()
+        return grad_input
+
+
+
 
 class BinarizeSTE(torch.autograd.Function):
     @staticmethod

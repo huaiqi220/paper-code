@@ -14,6 +14,7 @@ torch.autograd.set_detect_anomaly(True)
 from model import CGES
 from torch.cuda.amp import autocast
 import logging
+from model import STE
 
 
 '''
@@ -86,7 +87,11 @@ def trainModel():
                     data["name"] = data["name"].to(device)
                     # data["poglabel"] = data["poglabel"].to(device)
                     gaze_out = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["name"],"train")
-                    loss = loss_func(gaze_out, data["label"])        
+                    loss = loss_func(gaze_out, data["label"])
+                    user_id = data["name"]
+                    origin_cali = ddp_model.cali_vectors[user_id]
+                    cali_forward = STE.BinarizeSTE_origin.apply(origin_cali)
+                    loss = 0.01 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
 
 
                 loss.backward()

@@ -1,5 +1,5 @@
 
-commit = "尝试tanh替换sigmoid"
+commit = "尝试使用STE_origin,传统STE,在loss加入正则化项"
 
 
 

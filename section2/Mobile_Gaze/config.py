@@ -1,5 +1,5 @@
 
-commit = "尝试使用STE_origin,传统STE,在loss加入正则化项"
+commit = "纯tanh效果不好，现在是tanh加loss惩罚项"
 
 
 
@@ -38,13 +38,13 @@ cur_dataset = "GazeCapture"
 '''save path'''
 save_path = "./checkpoint"
 model_name = "MobileNetV2-Gaze-PoG"
-save_start_step = 6
+save_start_step = 2
 save_step = 2
 test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/128_32_0.001/Iter_32_MobileNetV2-Gze-PoG.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/硬离散，反向梯度直接传递，loss加惩罚项/128_12_0.001/Iter_12_MobileNetV2-Gaze-PoG.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2
@@ -64,7 +64,7 @@ binary
 cali_vector_type = "binary"
 
 # k =  4 * c
-cali_image_num = 150
+cali_image_num = 15
 
 cur_rank = 4
 

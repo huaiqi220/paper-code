@@ -11,6 +11,7 @@ import time
 import math
 import itertools
 from tqdm import tqdm
+from model import STE
 
 
 
@@ -335,9 +336,10 @@ def cali_test_func(root_path, label):
         f.write("2D Tensor:\n")
         for id in file_list:
             id = int(id)
-            sigmoid_output = torch.sigmoid(lines[id])
-            binary_output = (sigmoid_output > 0.5).float()
-            f.write(str(id) + " " + str(binary_output) + '\n')
+            line = STE.BinarizeSTE_origin.apply(lines[id])
+            # sigmoid_output = torch.sigmoid(lines[id])
+            # binary_output = (sigmoid_output > 0.5).float()
+            f.write(str(id) + " " + str(line) + '\n')
         # f.write(str())  # 将 Tensor 转为 numpy 数组并写入
         f.write("\n")
     f.close()
@@ -366,7 +368,7 @@ if __name__ == "__main__":
 
     test_label_path = os.path.join(root_path,"Label","model_fineture","test")
     label_list = [os.path.join(test_label_path, item) for item in os.listdir(test_label_path)]
-    for label in label_list:
+    for label in tqdm(label_list):
         res = cali_test_func(root_path, label)
     # binary_cali_func(None,None,None,None,None)
 

@@ -89,10 +89,10 @@ def trainModel():
                     gaze_out = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["name"],"train")
                     loss = loss_func(gaze_out, data["label"])
                     user_id = data["name"]
-                    origin_cali = ddp_model.cali_vectors[user_id]
+                    origin_cali = ddp_model.module.cali_vectors[user_id]
                     cali_forward = STE.BinarizeSTE_origin.apply(origin_cali)
-                    loss = 0.01 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
-
+                    loss = 0.1 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
+                    print(STE.BinarizeSTE_origin.apply(origin_cali))
 
                 loss.backward()
                 optimizer.step()
@@ -104,6 +104,7 @@ def trainModel():
                 print(log)
                 sys.stdout.flush()
                 outfile.flush()
+
 
             if epoch > config.save_start_step and epoch % config.save_step == 0  and rank == 0:
                 torch.save(ddp_model.state_dict(), os.path.join(save_path, f"Iter_{epoch}_{model_name}.pt"))

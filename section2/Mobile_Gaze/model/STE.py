@@ -13,6 +13,14 @@ class BinarizeSTE_origin(torch.autograd.Function):
         grad_input = grad_output.clone()
         return grad_input
 
+def compute_entropy_regularization(binary_output):
+    # 计算输出的均值，这里均值代表每个元素取 1 的概率
+    p = torch.mean(binary_output)
+    # 避免 log(0) 的问题，限制 p 的范围在一个很小的正数以上
+    p = torch.clamp(p, 1e-6, 1 - 1e-6)
+    # 计算熵正则化项
+    entropy_reg = - (p * torch.log(p) + (1 - p) * torch.log(1 - p))
+    return entropy_reg
 
 
 

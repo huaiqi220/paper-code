@@ -57,18 +57,25 @@ class mobile_gaze_2d(nn.Module):
             nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(1024, 256),
+            # 改为 512 -> 1024 -> 512 -> 256 -> 2
+            nn.Linear(1024, 512),
+            nn.BatchNorm1d(512),
+            nn.ReLU(),
+            nn.Linear(512, 256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
             nn.Dropout(),
             nn.Linear(256, 2)
         )
 
+
+
         self.cali_vectors = nn.Parameter(torch.randn(self.num_users, cali_size))
 
     def getTheGazeFeature(self, face, left, right, grid, user_id,mode,cali_vec=None):
         face_feature = self.face_cnn(face)
         left_feature = self.eye_cnn(left)
+        right = torch.flip(right, [3])
         right_feature = self.eye_cnn(right)
         grid_feature = self.grid_linear(grid)
 

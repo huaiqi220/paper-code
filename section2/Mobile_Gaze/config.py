@@ -1,5 +1,5 @@
 
-commit = "硬离散，反向梯度直接传递，loss加熵惩罚,  鼓励校准向量多样性"
+commit = "反转右眼,同时提高FC2的维度512->1024->512->256->2"
 
 
 
@@ -44,7 +44,7 @@ test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/硬离散，反向梯度直接传递，loss加惩罚项,  减小loss的scale/128_14_0.001/Iter_14_MobileNetV2-Gaze-PoG.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/硬离散，反向梯度直接传递，loss加熵惩罚,  鼓励校准向量多样性/128_14_0.001/Iter_14_MobileNetV2-Gaze-PoG.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2

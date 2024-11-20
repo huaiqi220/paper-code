@@ -15,11 +15,11 @@ from model import CGES
 from torch.cuda.amp import autocast
 import logging
 from model import STE
-# os.environ["CUDA_VISIBLE_DEVICES"] = "1,2,3,4,5,6,7"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1,2,3,4,5,6,7"
 
 
 '''
-torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
+torchrun --nnodes=1 --nproc_per_node=7 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
 
 '''
 
@@ -88,19 +88,13 @@ def trainModel():
                     data["name"] = data["name"].to(device)
                     # data["poglabel"] = data["poglabel"].to(device)
                     gaze_out = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["name"],"train")
-                    # loss = loss_func(gaze_out, data["label"])
-                    # user_id = data["name"]
-                    # origin_cali = ddp_model.module.cali_vectors[user_id]
-                    # cali_forward = STE.BinarizeSTE_origin.apply(origin_cali)
-                    # loss = 0.03 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
-                    # print(STE.BinarizeSTE_origin.apply(origin_cali))
                     loss = loss_func(gaze_out, data["label"])
                     user_id = data["name"]
                     origin_cali = ddp_model.module.cali_vectors[user_id]
                     cali_forward = STE.BinarizeSTE_origin.apply(origin_cali)
-                    entropy_reg = STE.compute_entropy_regularization(cali_forward)
-                    loss = 0.03 * entropy_reg + loss      
+                    loss = 0.02 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
                     print(STE.BinarizeSTE_origin.apply(origin_cali))
+  
 
                 loss.backward()
                 optimizer.step()

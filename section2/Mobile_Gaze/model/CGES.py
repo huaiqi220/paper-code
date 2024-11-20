@@ -95,6 +95,7 @@ class mobile_gaze_2d(nn.Module):
 
         face_feature = self.face_cnn(face)
         left_feature = self.eye_cnn(left)
+        right = torch.flip(right, [3])
         right_feature = self.eye_cnn(right)
         grid_feature = self.grid_linear(grid)
 

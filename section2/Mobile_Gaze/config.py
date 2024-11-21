@@ -44,7 +44,7 @@ test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/fc2维度降低，增加fc2维度效果不好/128_14_0.001/Iter_14_MobileNetV2-Gaze-PoG.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/校准向量与fc1_output加性方法实验/128_14_0.001/Iter_14_MobileNetV2-Gaze-PoG.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2

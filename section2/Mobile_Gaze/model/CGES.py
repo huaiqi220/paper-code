@@ -88,7 +88,15 @@ class mobile_gaze_2d(nn.Module):
         return fc1_output
 
     def computeGaze(self,cali_forward,fc1_output):
-        fc2_input = torch.cat((cali_forward, fc1_output), dim=1)
+        # fc2_input = torch.cat((cali_forward, fc1_output), dim=1)
+        # gaze_output = self.fc2(fc2_input)
+        # return gaze_output
+        # 将校准向量与 fc1 输出连接起来
+        # print(cali_forward.shape)
+        cali_forward = self.fcc(cali_forward)
+
+        # fc2_input = torch.cat((cali_forward, fc1_output), dim=1)
+        fc2_input = fc1_output + cali_forward
         gaze_output = self.fc2(fc2_input)
         return gaze_output
 

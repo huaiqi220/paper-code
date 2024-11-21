@@ -297,7 +297,13 @@ def cali_test_func(root_path, label):
         all_label.pop(0)
 
     selected_cali_lines, remaining_lines =  testtools.select_by_quadrants(all_label,int(config.cali_image_num / 4) + 1)
+    # 部分用户采集图片很少
 
+
+    if len(remaining_lines) < 10  or  len(selected_cali_lines) < 10:
+        print("该用户数据较少，跳过测试")
+        return 
+    
     if config.cur_dataset == "GazeCapture":
         all_test_dataset = gc_reader.calitxtload(all_label,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)
         cali_train_dataset = gc_reader.calitxtload(selected_cali_lines,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)

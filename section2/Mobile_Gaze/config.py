@@ -1,5 +1,5 @@
 
-commit = "反转右眼,同时提高FC2的维度512->1024->512->256->2"
+commit = "fc2维度降低，增加fc2维度效果不好"
 
 
 
@@ -44,7 +44,7 @@ test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/反转右眼,同时提高FC2的维度512->1024->512->256->2/128_14_0.001/Iter_14_MobileNetV2-Gaze-PoG.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/fc2维度降低，增加fc2维度效果不好/128_14_0.001/Iter_14_MobileNetV2-Gaze-PoG.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2

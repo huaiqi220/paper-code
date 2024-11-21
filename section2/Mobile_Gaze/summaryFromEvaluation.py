@@ -8,7 +8,7 @@ import pandas as pd
 from scipy import stats
 import os
 
-log_path = "./evaluation/GazeCapture/反转右眼,同时提高FC2的维度512->1024->512->256->2/cali_num_15_False_1e-07_12"
+log_path = "./evaluation/GazeCapture/fc2维度降低，增加fc2维度效果不好/cali_num_15_False_1e-07_12"
 data = []
 persons = os.listdir(log_path)
 

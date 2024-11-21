@@ -12,6 +12,7 @@ import math
 import itertools
 from tqdm import tqdm
 from model import STE
+from util import testtools
 
 
 
@@ -295,17 +296,7 @@ def cali_test_func(root_path, label):
         all_label = f.readlines()
         all_label.pop(0)
 
-    # 部分用户采集图片很少
-    if len(all_label) <= config.cali_image_num:
-        print("该用户数据较少，跳过测试")
-        return
-    
-    selected_cali_lines = random.sample(all_label, config.cali_image_num)
-
-    remaining_lines = [line for line in all_label if line not in selected_cali_lines]
-    if len(remaining_lines) < 10:
-        print("该用户数据较少，跳过测试")
-        return 
+    selected_cali_lines, remaining_lines =  testtools.select_by_quadrants(all_label,int(config.cali_image_num / 4) + 1)
 
     if config.cur_dataset == "GazeCapture":
         all_test_dataset = gc_reader.calitxtload(all_label,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)

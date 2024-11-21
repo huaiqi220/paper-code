@@ -53,7 +53,8 @@ class mobile_gaze_2d(nn.Module):
             nn.Linear(1024, 256)
         )
         self.fc2 = nn.Sequential(
-            nn.Linear(256 + self.cali_shape, 128),
+            # nn.Linear(256 + self.cali_shape, 128),
+            nn.Linear(256, 128),
             nn.BatchNorm1d(128),
             nn.ReLU(),
             nn.Dropout(),
@@ -62,6 +63,13 @@ class mobile_gaze_2d(nn.Module):
             nn.ReLU(),
             nn.Dropout(),
             nn.Linear(64, 2)
+        )
+
+        self.fcc = nn.Sequential(
+            nn.Linear(self.cali_shape,256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Dropout(),
         )
 
 
@@ -109,7 +117,10 @@ class mobile_gaze_2d(nn.Module):
             raise ValueError("mode should be either 'train' or 'inference'")
 
         # 将校准向量与 fc1 输出连接起来
-        fc2_input = torch.cat((cali_forward, fc1_output), dim=1)
+        cali_forward = self.fcc(cali_forward)
+
+        # fc2_input = torch.cat((cali_forward, fc1_output), dim=1)
+        fc2_input = fc1_output + cali_forward
         gaze_output = self.fc2(fc2_input)
 
         return gaze_output

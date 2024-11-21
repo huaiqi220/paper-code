@@ -1,5 +1,5 @@
 
-commit = "fc2维度降低，增加fc2维度效果不好"
+commit = "校准向量与fc1_output加性方法实验"
 
 
 
@@ -24,7 +24,7 @@ hm_level = 4
 batch_size = 128
 epoch = 14
 lr = 1e-3
-train_decay_rate = 0.1
+train_decay_rate = 0.5
 '''从第几epoch开始调整lr'''
 lr_decay_start_step = 6
 lr_decay_cycle = 2

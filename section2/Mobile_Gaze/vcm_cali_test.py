@@ -187,7 +187,7 @@ def binary_cali_func(name, calimodel, dataset, save_path, rank):
         for vec in tqdm(binary_tensors, desc="Binary Calibration Compute"):
             cur_vec = vec.to(device)
             cur_vec = cur_vec.expand(gaze_feature.shape[0], -1)
-            gazes = calimodel.computeGaze(gaze_feature, cur_vec)
+            gazes = calimodel.computeGaze(cur_vec,gaze_feature)
 
             total = 0
             count = 0

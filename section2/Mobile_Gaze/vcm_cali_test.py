@@ -11,6 +11,8 @@ import time
 import math
 import itertools
 from tqdm import tqdm
+from model import STE
+from util import testtools
 
 
 
@@ -185,7 +187,7 @@ def binary_cali_func(name, calimodel, dataset, save_path, rank):
         for vec in tqdm(binary_tensors, desc="Binary Calibration Compute"):
             cur_vec = vec.to(device)
             cur_vec = cur_vec.expand(gaze_feature.shape[0], -1)
-            gazes = calimodel.computeGaze(gaze_feature, cur_vec)
+            gazes = calimodel.computeGaze(cur_vec,gaze_feature)
 
             total = 0
             count = 0
@@ -287,25 +289,21 @@ def cali_test_func(root_path, label):
     rank = config.cur_rank
     k = config.k
     cur_id = label.split("/")[-1].split(".")[0]
-    cali_folder = os.path.join(config.test_save_path,config.cur_dataset, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer) + "_" + str(config.cali_lr) + "_" + str(config.k), cur_id)
+    cali_folder = os.path.join(config.test_save_path,config.cur_dataset,config.commit, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer) + "_" + str(config.cali_lr) + "_" + str(config.k), cur_id)
 
     all_label = []
     with open(label, "r") as f:
         all_label = f.readlines()
         all_label.pop(0)
 
+    selected_cali_lines, remaining_lines =  testtools.select_by_quadrants(all_label,int(config.cali_image_num / 4) + 1)
     # 部分用户采集图片很少
-    if len(all_label) <= config.cali_image_num:
-        print("该用户数据较少，跳过测试")
-        return
-    
-    selected_cali_lines = random.sample(all_label, config.cali_image_num)
 
-    remaining_lines = [line for line in all_label if line not in selected_cali_lines]
-    if len(remaining_lines) < 10:
+
+    if len(remaining_lines) < 10  or  len(selected_cali_lines) < 10:
         print("该用户数据较少，跳过测试")
         return 
-
+    
     if config.cur_dataset == "GazeCapture":
         all_test_dataset = gc_reader.calitxtload(all_label,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)
         cali_train_dataset = gc_reader.calitxtload(selected_cali_lines,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)
@@ -335,9 +333,10 @@ def cali_test_func(root_path, label):
         f.write("2D Tensor:\n")
         for id in file_list:
             id = int(id)
-            sigmoid_output = torch.sigmoid(lines[id])
-            binary_output = (sigmoid_output > 0.5).float()
-            f.write(str(id) + " " + str(binary_output) + '\n')
+            line = STE.BinarizeSTE_origin.apply(lines[id])
+            # sigmoid_output = torch.sigmoid(lines[id])
+            # binary_output = (sigmoid_output > 0.5).float()
+            f.write(str(id) + " " + str(line) + '\n')
         # f.write(str())  # 将 Tensor 转为 numpy 数组并写入
         f.write("\n")
     f.close()
@@ -366,7 +365,7 @@ if __name__ == "__main__":
 
     test_label_path = os.path.join(root_path,"Label","model_fineture","test")
     label_list = [os.path.join(test_label_path, item) for item in os.listdir(test_label_path)]
-    for label in label_list:
+    for label in tqdm(label_list):
         res = cali_test_func(root_path, label)
     # binary_cali_func(None,None,None,None,None)
 

@@ -1,32 +1,11 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
-
+from model import STE
 import config
 import torch.nn.functional as F
 
-class BinarizeSTEWithL2(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, input):
-        # 在前向传播中，返回经过 sigmoid 离散化后的结果
-        sigmoid_output = torch.sigmoid(input)
-        binary_output = (sigmoid_output > 0.5).float()
-        ctx.save_for_backward(sigmoid_output)  # 保存前向传播时的 sigmoid 结果以用于反向传播
-        return binary_output
 
-    @staticmethod
-    def backward(ctx, grad_output):
-        sigmoid_output, = ctx.saved_tensors
-        # L2 惩罚项梯度的部分
-
-        scale = 0.9
-        l2_penalty_gradient = 2 * (sigmoid_output - 0.5)
-        # 根据 sigmoid_output 调整梯度，增加向 0.5 的靠拢
-        adjustment_factor = torch.where(sigmoid_output > 0.5, -l2_penalty_gradient, l2_penalty_gradient)
-        # 最终的梯度是原始的 grad_output 加上调整因子后的值
-        adjusted_grad = scale * (grad_output + adjustment_factor)
-        # 返回调整后的梯度
-        return adjusted_grad
 
 def getMobileNetV2CNN():
     model = models.mobilenet_v2(pretrained=True)
@@ -71,25 +50,36 @@ class mobile_gaze_2d(nn.Module):
             nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(1024, 512)
+            nn.Linear(1024, 256)
         )
         self.fc2 = nn.Sequential(
-            nn.Linear(512 + self.cali_shape, 1024),
-            nn.BatchNorm1d(1024),
+            # nn.Linear(256 + self.cali_shape, 128),
+            nn.Linear(256, 128),
+            nn.BatchNorm1d(128),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(1024, 256),
+            nn.Linear(128, 64),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            nn.Dropout(),
+            nn.Linear(64, 2)
+        )
+
+        self.fcc = nn.Sequential(
+            nn.Linear(self.cali_shape,256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(256, 2)
         )
+
+
 
         self.cali_vectors = nn.Parameter(torch.randn(self.num_users, cali_size))
 
     def getTheGazeFeature(self, face, left, right, grid, user_id,mode,cali_vec=None):
         face_feature = self.face_cnn(face)
         left_feature = self.eye_cnn(left)
+        right = torch.flip(right, [3])
         right_feature = self.eye_cnn(right)
         grid_feature = self.grid_linear(grid)
 
@@ -98,7 +88,15 @@ class mobile_gaze_2d(nn.Module):
         return fc1_output
 
     def computeGaze(self,cali_forward,fc1_output):
-        fc2_input = torch.cat((cali_forward, fc1_output), dim=1)
+        # fc2_input = torch.cat((cali_forward, fc1_output), dim=1)
+        # gaze_output = self.fc2(fc2_input)
+        # return gaze_output
+        # 将校准向量与 fc1 输出连接起来
+        # print(cali_forward.shape)
+        cali_forward = self.fcc(cali_forward)
+
+        # fc2_input = torch.cat((cali_forward, fc1_output), dim=1)
+        fc2_input = fc1_output + cali_forward
         gaze_output = self.fc2(fc2_input)
         return gaze_output
 
@@ -109,6 +107,7 @@ class mobile_gaze_2d(nn.Module):
 
         face_feature = self.face_cnn(face)
         left_feature = self.eye_cnn(left)
+        right = torch.flip(right, [3])
         right_feature = self.eye_cnn(right)
         grid_feature = self.grid_linear(grid)
 
@@ -117,7 +116,7 @@ class mobile_gaze_2d(nn.Module):
 
         # 使用 STE 方法对校准向量进行离散化
         if mode == "train":
-            cali_forward = BinarizeSTEWithL2.apply(self.cali_vectors[user_id])
+            cali_forward = STE.BinarizeSTE_origin.apply(self.cali_vectors[user_id])
         elif mode == "inference":
             # 这里的写法，推理一个batchsize数据必须来自同一个人
             cali_vec = cali_vec.expand(face.shape[0], -1)
@@ -126,7 +125,10 @@ class mobile_gaze_2d(nn.Module):
             raise ValueError("mode should be either 'train' or 'inference'")
 
         # 将校准向量与 fc1 输出连接起来
-        fc2_input = torch.cat((cali_forward, fc1_output), dim=1)
+        cali_forward = self.fcc(cali_forward)
+
+        # fc2_input = torch.cat((cali_forward, fc1_output), dim=1)
+        fc2_input = fc1_output + cali_forward
         gaze_output = self.fc2(fc2_input)
 
         return gaze_output

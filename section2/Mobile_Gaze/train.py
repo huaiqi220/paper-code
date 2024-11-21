@@ -14,10 +14,12 @@ torch.autograd.set_detect_anomaly(True)
 from model import CGES
 from torch.cuda.amp import autocast
 import logging
+from model import STE
+os.environ["CUDA_VISIBLE_DEVICES"] = "1,2,3,4,5,6,7"
 
 
 '''
-torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
+torchrun --nnodes=1 --nproc_per_node=7 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
 
 '''
 
@@ -37,7 +39,7 @@ def trainModel():
 
     
     model_name = config.model_name
-    save_path = os.path.join(config.save_path,config.cur_dataset,
+    save_path = os.path.join(config.save_path,config.cur_dataset,config.commit,
                              str(config.batch_size) +"_" + str(config.epoch) + "_" + str(config.lr))
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -76,7 +78,7 @@ def trainModel():
             time_begin = time.time()
             for i, data in enumerate(dataset):
                 optimizer.zero_grad()
-                with autocast():
+                with torch.amp.autocast("cuda"):
                     data["face"] = data["face"].to(device)
                     data["left"] = data["left"].to(device)
                     data["right"] = data["right"].to(device)
@@ -86,8 +88,13 @@ def trainModel():
                     data["name"] = data["name"].to(device)
                     # data["poglabel"] = data["poglabel"].to(device)
                     gaze_out = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["name"],"train")
-                    loss = loss_func(gaze_out, data["label"])        
-
+                    loss = loss_func(gaze_out, data["label"])
+                    user_id = data["name"]
+                    origin_cali = ddp_model.module.cali_vectors[user_id]
+                    cali_forward = STE.BinarizeSTE_origin.apply(origin_cali)
+                    loss = 0.02 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
+                    print(STE.BinarizeSTE_origin.apply(origin_cali))
+  
 
                 loss.backward()
                 optimizer.step()
@@ -99,6 +106,7 @@ def trainModel():
                 print(log)
                 sys.stdout.flush()
                 outfile.flush()
+
 
             if epoch > config.save_start_step and epoch % config.save_step == 0  and rank == 0:
                 torch.save(ddp_model.state_dict(), os.path.join(save_path, f"Iter_{epoch}_{model_name}.pt"))

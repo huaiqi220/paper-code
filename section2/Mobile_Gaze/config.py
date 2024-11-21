@@ -1,4 +1,8 @@
 
+commit = "校准向量与fc1_output加性方法实验"
+
+
+
 
 ''' super params '''
 k = 12
@@ -18,11 +22,11 @@ hm_level = 4
 
 '''Data params'''
 batch_size = 128
-epoch = 32
+epoch = 14
 lr = 1e-3
-train_decay_rate = 0.1
+train_decay_rate = 0.5
 '''从第几epoch开始调整lr'''
-lr_decay_start_step = 24
+lr_decay_start_step = 6
 lr_decay_cycle = 2
 
 '''data path'''
@@ -34,13 +38,13 @@ cur_dataset = "GazeCapture"
 '''save path'''
 save_path = "./checkpoint"
 model_name = "MobileNetV2-Gaze-PoG"
-save_start_step = 24
+save_start_step = 6
 save_step = 2
 test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/128_32_0.001/Iter_32_MobileNetV2-Gze-PoG.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/校准向量与fc1_output加性方法实验/128_14_0.001/Iter_14_MobileNetV2-Gaze-PoG.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2
@@ -60,7 +64,7 @@ binary
 cali_vector_type = "binary"
 
 # k =  4 * c
-cali_image_num = 150
+cali_image_num = 15
 
 cur_rank = 4
 

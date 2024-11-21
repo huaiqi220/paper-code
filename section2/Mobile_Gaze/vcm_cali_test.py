@@ -288,7 +288,7 @@ def cali_test_func(root_path, label):
     rank = config.cur_rank
     k = config.k
     cur_id = label.split("/")[-1].split(".")[0]
-    cali_folder = os.path.join(config.test_save_path,config.cur_dataset, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer) + "_" + str(config.cali_lr) + "_" + str(config.k), cur_id)
+    cali_folder = os.path.join(config.test_save_path,config.cur_dataset,config.commit, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer) + "_" + str(config.cali_lr) + "_" + str(config.k), cur_id)
 
     all_label = []
     with open(label, "r") as f:

@@ -50,22 +50,18 @@ class mobile_gaze_2d(nn.Module):
             nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(1024, 512)
+            nn.Linear(1024, 256)
         )
         self.fc2 = nn.Sequential(
-            nn.Linear(512 + self.cali_shape, 1024),
-            nn.BatchNorm1d(1024),
+            nn.Linear(256 + self.cali_shape, 128),
+            nn.BatchNorm1d(128),
             nn.ReLU(),
             nn.Dropout(),
-            # 改为 512 -> 1024 -> 512 -> 256 -> 2
-            nn.Linear(1024, 512),
-            nn.BatchNorm1d(512),
-            nn.ReLU(),
-            nn.Linear(512, 256),
-            nn.BatchNorm1d(256),
+            nn.Linear(128, 64),
+            nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(256, 2)
+            nn.Linear(64, 2)
         )
 
 

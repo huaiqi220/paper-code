@@ -1,5 +1,5 @@
 
-commit = "校准向量与fc1_output加性方法实验"
+commit = "重新训练一个完整版的，没问题的，cat类型的低复杂度fc2训练，看看没故障测试的精度"
 
 
 
@@ -44,7 +44,7 @@ test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/校准向量与fc1_output加性方法实验/128_14_0.001/Iter_14_MobileNetV2-Gaze-PoG.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/重新训练一个完整版的，没问题的，+类型的低复杂度fc2训练，看看没故障测试的精度/128_14_0.001/Iter_14_MobileNetV2-Gaze-PoG.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2
@@ -61,7 +61,7 @@ cali_last_layer = False
 float32
 binary
 '''
-cali_vector_type = "binary"
+cali_vector_type = "float32"
 
 # k =  4 * c
 cali_image_num = 15

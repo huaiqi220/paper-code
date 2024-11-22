@@ -57,7 +57,7 @@ def trainModel():
     
     '''不加这个，多机分布式训练时候会出问题'''
     device_id = rank % torch.cuda.device_count()   
-    ddp_model = CGES.mobile_gaze_2d(config.hm_size, 12, 25 * 25).to(rank)
+    ddp_model = CGES.mobile_gaze_2d(config.hm_size, config.k, 25 * 25).to(rank)
     device = torch.device("cuda" + ":" + str(rank))
     ddp_model = DDP(ddp_model)
 

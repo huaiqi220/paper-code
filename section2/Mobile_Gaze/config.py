@@ -1,11 +1,11 @@
 
-commit = "重新训练一个完整版的，没问题的，cat类型的低复杂度fc2训练，看看没故障测试的精度"
+commit = "cat、低复杂度fc2、k8、STE硬离散"
 
 
 
 
 ''' super params '''
-k = 12
+k = 8
 
 
 

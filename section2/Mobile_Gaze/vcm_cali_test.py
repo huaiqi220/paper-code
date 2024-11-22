@@ -315,7 +315,7 @@ def cali_test_func(root_path, label):
         cali_test_dataset = mpii_reader.calitxtload(remaining_lines,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)
 
     test_model_path = config.test_model_path
-    calimodel = model(config.hm_size, 12, 25 * 25)
+    calimodel = model(config.hm_size, config.k, 25 * 25)
     statedict = torch.load(test_model_path)
     new_state_dict = {}
     for key, value in statedict.items():

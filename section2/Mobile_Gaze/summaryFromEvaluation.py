@@ -8,7 +8,7 @@ import pandas as pd
 from scipy import stats
 import os
 
-log_path = "./evaluation/GazeCapture/重新训练一个完整版的，没问题的，+类型的低复杂度fc2训练，看看没故障测试的精度/cali_num_15_False_1e-07_12"
+log_path = "./evaluation/GazeCapture/cat、低复杂度fc2、k8、STE硬离散/cali_num_15_False_1e-07_8"
 data = []
 persons = os.listdir(log_path)
 

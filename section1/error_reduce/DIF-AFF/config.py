@@ -1,5 +1,5 @@
 
-commit = "cat、低复杂度fc2、k4、STE硬离散"
+commit = "GC数据集、DIFAFF第一次训练"
 
 
 
@@ -37,7 +37,7 @@ cur_dataset = "GazeCapture"
 
 '''save path'''
 save_path = "./checkpoint"
-model_name = "MobileNetV2-Gaze-PoG"
+model_name = "DIFAFF"
 save_start_step = 6
 save_step = 2
 test_save_path = "./evaluation"

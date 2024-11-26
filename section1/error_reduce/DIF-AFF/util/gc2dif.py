@@ -8,7 +8,7 @@ import sys
 import random
 
 def getNewLines(lines,i):
-    return lines[i] + " || " + lines[random.randint(0, len(lines) - 1)]
+    return lines[i][:-1] + " || " + lines[random.randint(0, len(lines) - 1)][:-1]
 
 def getFullLines(lines):
     new_lines = []

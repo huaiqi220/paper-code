@@ -8,7 +8,7 @@ import time
 import sys
 import config
 from torch.nn.parallel import DistributedDataParallel as DDP
-from model import dif_aff_net
+from model import crossNet
 
 torch.autograd.set_detect_anomaly(True)
 
@@ -17,7 +17,7 @@ torch.autograd.set_detect_anomaly(True)
 
 
 '''
-torchrun --nnodes=1 --nproc_per_node=7 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
+torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
 
 '''
 
@@ -55,7 +55,7 @@ def trainModel():
     '''不加这个，多机分布式训练时候会出问题'''
     device_id = rank % torch.cuda.device_count()   
     device = torch.device(f"cuda:{device_id}")
-    ddp_model = DDP(dif_aff_net.difaffnet().to(device))
+    ddp_model = DDP(crossNet.DifNNPoG().to(device))
 
     print("构建优化器")
     loss_func = nn.MSELoss()
@@ -95,8 +95,8 @@ def trainModel():
                     data2["label"] = data2["label"].to(device)
                     data2["name"] = data2["name"].to(device)
 
-                    input1 = [data1["left"],data1["right"],data1["face"],data1["rects"]]
-                    input2 = [data2["left"],data2["right"],data2["face"],data2["rects"]]
+                    input1 = [data1["left"],data1["right"]]
+                    input2 = [data2["left"],data2["right"]]
                     gaze_out = ddp_model(input1, input2)
                     loss = loss_func(gaze_out, label)
   

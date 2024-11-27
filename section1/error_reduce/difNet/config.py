@@ -1,5 +1,5 @@
 
-commit = "GC数据集、DIFAFF第一次训练"
+commit = "GC数据集、DIF-NN-POG第一次训练"
 
 
 
@@ -37,14 +37,14 @@ cur_dataset = "GazeCapture"
 
 '''save path'''
 save_path = "./checkpoint"
-model_name = "DIFAFF"
+model_name = "DIF_NN_POG"
 save_start_step = 6
 save_step = 2
 test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/hi/zhuzi/paper-code/section1/error_reduce/DIF-AFF/checkpoint/GazeCapture/GC数据集、DIFAFF第一次训练/128_14_0.001/Iter_14_DIFAFF.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section1/error_reduce/difNet/checkpoint/GazeCapture/GC数据集、DIF-NN-POG第一次训练/128_14_0.001/Iter_14_DIF_NN_POG.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2

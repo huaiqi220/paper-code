@@ -8,7 +8,7 @@ import pandas as pd
 from scipy import stats
 import os
 
-log_path = "./evaluation/GazeCapture/GC数据集、DIFAFF第一次训练/DIFAFF"
+log_path = "./evaluation/GazeCapture/GC数据集、DIF-NN-POG第一次训练/DIF_NN_POG"
 data = []
 persons = os.listdir(log_path)
 

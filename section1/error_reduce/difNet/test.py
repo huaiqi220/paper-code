@@ -5,7 +5,7 @@ import random
 from dataloader import gc_reader
 from dataloader import mpii_reader
 import torch
-from model import dif_aff_net
+from model import crossNet
 from torch import nn
 import time
 import math
@@ -62,8 +62,8 @@ def test_func(name, testmodel, dataset, save_path, rank):
                 data2["label"] = data2["label"].to(device)
                 data2["name"] = data2["name"].to(device)
 
-                input1 = [data1["left"], data1["right"], data1["face"], data1["rects"]]
-                input2 = [data2["left"], data2["right"], data2["face"], data2["rects"]]
+                input1 = [data1["left"], data1["right"]]
+                input2 = [data2["left"], data2["right"]]
                 gazes = testmodel(input1, input2)
 
                 print(f'\r[Batch : {j}]', end='')
@@ -237,7 +237,7 @@ def cali_test_func(root_path, label):
                                                    True, 8, True)
 
     test_model_path = config.test_model_path
-    testmodel = dif_aff_net.difaffnet()
+    testmodel = crossNet.DifNNPoG()
     statedict = torch.load(test_model_path)
     new_state_dict = {}
     for key, value in statedict.items():

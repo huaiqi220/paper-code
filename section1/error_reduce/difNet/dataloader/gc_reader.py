@@ -58,11 +58,11 @@ class loader(Dataset):
       rect = torch.from_numpy(rect).type(torch.FloatTensor)
 
       rimg = cv2.imread(os.path.join(self.root, righteye))
-      rimg = cv2.resize(rimg, (112, 112))/255.0
+      rimg = cv2.resize(rimg, (48, 72))/255.0
       rimg = rimg.transpose(2, 0, 1)
 
       limg = cv2.imread(os.path.join(self.root, lefteye))
-      limg = cv2.resize(limg, (112, 112))/255.0
+      limg = cv2.resize(limg, (48, 72))/255.0
       limg = limg.transpose(2, 0, 1)
       
       fimg = cv2.imread(os.path.join(self.root, face))
@@ -125,11 +125,11 @@ class caliloader(Dataset):
       rect = torch.from_numpy(rect).type(torch.FloatTensor)
 
       rimg = cv2.imread(os.path.join(self.root, righteye))
-      rimg = cv2.resize(rimg, (112, 112)) / 255.0
+      rimg = cv2.resize(rimg, (48, 72)) / 255.0
       rimg = rimg.transpose(2, 0, 1)
 
       limg = cv2.imread(os.path.join(self.root, lefteye))
-      limg = cv2.resize(limg, (112, 112)) / 255.0
+      limg = cv2.resize(limg, (48, 72)) / 255.0
       limg = limg.transpose(2, 0, 1)
 
       fimg = cv2.imread(os.path.join(self.root, face))

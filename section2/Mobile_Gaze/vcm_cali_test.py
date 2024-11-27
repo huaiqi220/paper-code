@@ -289,14 +289,18 @@ def cali_test_func(root_path, label):
     rank = config.cur_rank
     k = config.k
     cur_id = label.split("/")[-1].split(".")[0]
-    cali_folder = os.path.join(config.test_save_path,config.cur_dataset,config.commit, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer) + "_" + str(config.cali_lr) + "_" + str(config.k), cur_id)
+    cali_folder = os.path.join(config.test_save_path,config.cur_dataset,config.commit, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer) + "_" + str(config.cali_lr) + "_" + str(config.k) + "_" + config.mpii_K, cur_id)
 
     all_label = []
     with open(label, "r") as f:
         all_label = f.readlines()
         all_label.pop(0)
+    if config.cur_dataset == "GazeCapture":
+        selected_cali_lines, remaining_lines =  testtools.select_by_quadrants_gc(all_label,int(config.cali_image_num / 4) + 1)
+    elif config.cur_dataset == "MPII":
+        selected_cali_lines, remaining_lines = testtools.select_by_quadrants_mpii(all_label,
+                                                                                int(config.cali_image_num / 4) + 1)
 
-    selected_cali_lines, remaining_lines =  testtools.select_by_quadrants(all_label,int(config.cali_image_num / 4) + 1)
     # 部分用户采集图片很少
 
 
@@ -363,7 +367,7 @@ if __name__ == "__main__":
     elif config.cur_dataset == "MPII":
         root_path = config.MPIIFaceGaze_root
 
-    test_label_path = os.path.join(root_path,"Label","model_fineture","test")
+    test_label_path = os.path.join(root_path,"Label","K_Fold_norm",config.mpii_K, "test")
     label_list = [os.path.join(test_label_path, item) for item in os.listdir(test_label_path)]
     for label in tqdm(label_list):
         res = cali_test_func(root_path, label)

@@ -50,19 +50,33 @@ class mobile_gaze_2d(nn.Module):
             nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(1024, 256)
+            # 这里要配合下面FC2选择来改
+            nn.Linear(1024, 512)
         )
+        '''小FC2'''
+        # self.fc2 = nn.Sequential(
+        #     nn.Linear(256 + self.cali_shape, 128),
+        #     # nn.Linear(256, 128),
+        #     nn.BatchNorm1d(128),
+        #     nn.ReLU(),
+        #     nn.Dropout(),
+        #     nn.Linear(128, 64),
+        #     nn.BatchNorm1d(64),
+        #     nn.ReLU(),
+        #     nn.Dropout(),
+        #     nn.Linear(64, 2)
+        # )
+        '''原始版本FC2'''
         self.fc2 = nn.Sequential(
-            nn.Linear(256 + self.cali_shape, 128),
-            # nn.Linear(256, 128),
-            nn.BatchNorm1d(128),
+            nn.Linear(512 + self.cali_shape, 1024),
+            nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(128, 64),
-            nn.BatchNorm1d(64),
+            nn.Linear(1024, 256),
+            nn.BatchNorm1d(256),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(64, 2)
+            nn.Linear(256, 2)
         )
 
         # self.fcc = nn.Sequential(

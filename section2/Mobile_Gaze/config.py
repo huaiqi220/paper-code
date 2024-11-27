@@ -1,5 +1,5 @@
 
-commit = "cat、低复杂度fc2、k4、STE硬离散"
+commit = "测试MPII"
 
 
 
@@ -32,8 +32,10 @@ lr_decay_cycle = 2
 '''data path'''
 GazeCapture_root = "/home/hi/zhuzi/data/GCOutput/"
 MPIIFaceGaze_root = "/home/hi/zhuzi/data/mpii/"
+''' 1  2 3 4'''
+mpii_K = "1"
 
-cur_dataset = "GazeCapture"
+cur_dataset = "MPII"
 
 '''save path'''
 save_path = "./checkpoint"
@@ -44,7 +46,7 @@ test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/cat、低复杂度fc2、k4、STE硬离散/128_14_0.001/Iter_14_MobileNetV2-Gaze-PoG.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/MPII/cat、原始fc2、k4、STE硬离散/128_14_0.001_1/Iter_14_MobileNetV2-Gaze-PoG.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2
@@ -66,7 +68,7 @@ cali_vector_type = "binary"
 # k =  4 * c
 cali_image_num = 15
 
-cur_rank = 7
+cur_rank = 2
 
 
 

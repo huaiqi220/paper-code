@@ -15,11 +15,11 @@ from model import CGES
 from torch.cuda.amp import autocast
 import logging
 from model import STE
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5,6"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5,6"
 
 
 '''
-torchrun --nnodes=1 --nproc_per_node=7 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
+torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
 
 '''
 
@@ -40,11 +40,11 @@ def trainModel():
     
     model_name = config.model_name
     save_path = os.path.join(config.save_path,config.cur_dataset,config.commit,
-                             str(config.batch_size) +"_" + str(config.epoch) + "_" + str(config.lr))
+                             str(config.batch_size) +"_" + str(config.epoch) + "_" + str(config.lr)+"_" + config.mpii_K)
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    label_path = os.path.join(root_path,"Label","model_fineture", "train")
+    label_path = os.path.join(root_path,"Label","K_Fold_norm",config.mpii_K, "train")
     label_path = [os.path.join(label_path, item) for item in os.listdir(label_path)]
 
 

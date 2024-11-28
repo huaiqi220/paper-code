@@ -11,15 +11,15 @@ import config
 from torch.nn.parallel import DistributedDataParallel as DDP
 torch.autograd.set_detect_anomaly(True)
 # from model import model
-from model import CGES
+from model import CGESwithGCSTE as CGES
 from torch.cuda.amp import autocast
 import logging
 from model import STE
-# os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5,6"
+os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,6,7"
 
 
 '''
-torchrun --nnodes=1 --nproc_per_node=6 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
+torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29402 trainwithgcste.py
 
 '''
 
@@ -87,14 +87,13 @@ def trainModel():
                     data["rects"] = data["rects"].to(device)
                     data["label"] = data["label"].to(device)
                     data["name"] = data["name"].to(device)
-                    # data["poglabel"] = data["poglabel"].to(device)
                     gaze_out = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["name"],"train")
                     loss = loss_func(gaze_out, data["label"])
                     user_id = data["name"]
                     origin_cali = ddp_model.module.cali_vectors[user_id]
-                    cali_forward = STE.BinarizeSTE_origin.apply(origin_cali)
-                    loss = 0.02 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
-                    print(STE.BinarizeSTE_origin.apply(origin_cali))
+                    cali_forward = STE.BinarizeSTE.apply(origin_cali)
+                    # loss = 0.02 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
+                    print(STE.BinarizeSTE.apply(origin_cali))
   
 
                 loss.backward()

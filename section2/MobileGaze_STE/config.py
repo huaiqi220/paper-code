@@ -1,9 +1,19 @@
 
-commit = "训练一个k12的基准测试模型，在这个模型基础上测试校准样本数量，原始版本Fc2，cat特征合并方式"
+commit = "GC数据集梯度约束STE，不加loss"
 
 ''' super params '''
 k = 12
 
+
+'''
+1 原始版本STE，不加loss约束
+2 原始版本STE，加loss熵鼓励
+3 tanh模拟软STE
+4 梯度约束STE，不加loss
+5 梯度约束STE，加loss约束
+6 原始版本STE，加loss约束
+'''
+current = 1
 
 
 '''Heatmap params'''
@@ -63,7 +73,7 @@ binary
 cali_vector_type = "binary"
 
 # k =  4 * c
-cali_image_num = 4
+cali_image_num = 15
 
 cur_rank = 3
 

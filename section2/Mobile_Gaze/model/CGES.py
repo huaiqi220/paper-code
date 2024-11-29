@@ -53,8 +53,9 @@ class mobile_gaze_2d(nn.Module):
             # 这里要配合下面FC2选择来改
             nn.Linear(1024, 512)
         )
+
         '''小FC2'''
-        # self.fc2 = nn.Sequential(
+        # self.fc2_small = nn.Sequential(
         #     nn.Linear(256 + self.cali_shape, 128),
         #     # nn.Linear(256, 128),
         #     nn.BatchNorm1d(128),
@@ -66,8 +67,9 @@ class mobile_gaze_2d(nn.Module):
         #     nn.Dropout(),
         #     nn.Linear(64, 2)
         # )
+
         '''原始版本FC2'''
-        self.fc2 = nn.Sequential(
+        self.fc2_origin_version = nn.Sequential(
             nn.Linear(512 + self.cali_shape, 1024),
             nn.BatchNorm1d(1024),
             nn.ReLU(),
@@ -78,7 +80,11 @@ class mobile_gaze_2d(nn.Module):
             nn.Dropout(),
             nn.Linear(256, 2)
         )
-
+        '''
+            这是校准向量全连接成256维度的fcc
+            但目前分析cat与+模式效果差不多，因此
+            目前cat模式用不到
+        '''
         # self.fcc = nn.Sequential(
         #     nn.Linear(self.cali_shape,256),
         #     nn.BatchNorm1d(256),
@@ -111,7 +117,7 @@ class mobile_gaze_2d(nn.Module):
 
         fc2_input = torch.cat((cali_forward, fc1_output), dim=1)
         # fc2_input = fc1_output + cali_forward
-        gaze_output = self.fc2(fc2_input)
+        gaze_output = self.fc2_origin_version(fc2_input)
         return gaze_output
 
     def forward(self, face, left, right, grid, user_id,mode,cali_vec=None):
@@ -143,7 +149,7 @@ class mobile_gaze_2d(nn.Module):
 
         fc2_input = torch.cat((cali_forward, fc1_output), dim=1)
         # fc2_input = fc1_output + cali_forward
-        gaze_output = self.fc2(fc2_input)
+        gaze_output = self.fc2_origin_version(fc2_input)
 
         return gaze_output
     

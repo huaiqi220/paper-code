@@ -1,5 +1,5 @@
 
-commit = "GC,k12,float32训练"
+commit = "测试MPII"
 
 
 
@@ -46,7 +46,7 @@ test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/MPII/cat、原始fc2、k4、STE硬离散/128_14_0.001_1/Iter_14_MobileNetV2-Gaze-PoG.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/训练一个k12的基准测试模型，在这个模型基础上测试校准样本数量，原始版本Fc2，cat特征合并方式/128_14_0.001_1/Iter_14_MobileNetV2-Gaze-PoG.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2
@@ -66,9 +66,9 @@ binary
 cali_vector_type = "float32"
 
 # k =  4 * c
-cali_image_num = 15
+cali_image_num = 4
 
-cur_rank = 2
+cur_rank = 3
 
 
 

@@ -85,6 +85,7 @@ class SingleNNPoG(nn.Module):
     输入之前记得翻转right
     '''
     def forward(self,left,right):
+        right = torch.flip(right,[3])
         left = self.eyeModel(left)
         right = self.eyeModel(right)
         left = self.flattern(left)
@@ -131,6 +132,7 @@ class DifNNPoG(nn.Module):
     def forward(self,frame1,frame2):
         left1 = frame1[0]
         right1 = frame1[1]
+        right1 = torch.flip(right1,[3])
         left1 = self.eyeModel(left1)
         right1 = self.eyeModel(right1)
         left1 = self.flattern(left1)
@@ -140,6 +142,7 @@ class DifNNPoG(nn.Module):
 
         left2 = frame2[0]
         right2 = frame2[1]
+        right2 = torch.flip(right2,[3])
         left2 = self.eyeModel(left2)
         right2 = self.eyeModel(right2)
         left2 = self.flattern(left2)

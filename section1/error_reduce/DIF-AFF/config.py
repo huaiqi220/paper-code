@@ -1,5 +1,5 @@
 
-commit = "GC数据集、DIFAFF第一次训练"
+commit = "GC数据集、DIFAFF第二次训练，看效果能不能更好"
 
 
 
@@ -21,12 +21,12 @@ hm_level = 4
 
 
 '''Data params'''
-batch_size = 128
-epoch = 14
+batch_size = 256
+epoch = 16
 lr = 1e-3
 train_decay_rate = 0.5
 '''从第几epoch开始调整lr'''
-lr_decay_start_step = 6
+lr_decay_start_step = 8
 lr_decay_cycle = 2
 
 '''data path'''
@@ -44,7 +44,7 @@ test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/hi/zhuzi/paper-code/section1/error_reduce/DIF-AFF/checkpoint/GazeCapture/GC数据集、DIFAFF第一次训练/128_14_0.001/Iter_14_DIFAFF.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section1/error_reduce/DIF-AFF/checkpoint/GazeCapture/GC数据集、DIFAFF第二次训练，看效果能不能更好/256_16_0.001/Iter_16_DIFAFF.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2

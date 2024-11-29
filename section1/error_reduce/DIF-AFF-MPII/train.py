@@ -13,11 +13,19 @@ from model import dif_aff_net
 torch.autograd.set_detect_anomaly(True)
 
 
+<<<<<<< HEAD
 os.environ["CUDA_VISIBLE_DEVICES"] = "3,4,5"
 
 
 '''
 torchrun --nnodes=1 --nproc_per_node=3 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29402 train.py
+=======
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5,6"
+
+
+'''
+torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
+>>>>>>> d569683c7f3084cf8f905addbe1ef1bc47f9296a
 
 '''
 
@@ -38,10 +46,17 @@ def trainModel():
     
     model_name = config.model_name
     save_path = os.path.join(config.save_path, config.cur_dataset, config.commit,
+<<<<<<< HEAD
                              f"{config.batch_size}_{config.epoch}_{config.lr}_{config.cur_k}")
     os.makedirs(save_path, exist_ok=True)
 
     label_path = os.path.join(root_path,"Label","K_Fold_diff","diflabel",config.cur_k, "train")
+=======
+                             f"{config.batch_size}_{config.epoch}_{config.lr}")
+    os.makedirs(save_path, exist_ok=True)
+
+    label_path = os.path.join(root_path,"Label","diflabel", "train")
+>>>>>>> d569683c7f3084cf8f905addbe1ef1bc47f9296a
     label_path = [os.path.join(label_path, item) for item in os.listdir(label_path)]
 
 
@@ -84,7 +99,11 @@ def trainModel():
                     data1["grid"] = data1["grid"].to(device)
                     data1["rects"] = data1["rects"].to(device)
                     data1["label"] = data1["label"].to(device)
+<<<<<<< HEAD
                     # data1["name"] = data1["name"].to(device)
+=======
+                    data1["name"] = data1["name"].to(device)
+>>>>>>> d569683c7f3084cf8f905addbe1ef1bc47f9296a
 
 
                     data2["face"] = data2["face"].to(device)
@@ -93,7 +112,11 @@ def trainModel():
                     data2["grid"] = data2["grid"].to(device)
                     data2["rects"] = data2["rects"].to(device)
                     data2["label"] = data2["label"].to(device)
+<<<<<<< HEAD
                     # data2["name"] = data2["name"].to(device)
+=======
+                    data2["name"] = data2["name"].to(device)
+>>>>>>> d569683c7f3084cf8f905addbe1ef1bc47f9296a
 
                     input1 = [data1["left"],data1["right"],data1["face"],data1["rects"]]
                     input2 = [data2["left"],data2["right"],data2["face"],data2["rects"]]

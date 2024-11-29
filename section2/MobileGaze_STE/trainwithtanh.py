@@ -11,7 +11,7 @@ import config
 from torch.nn.parallel import DistributedDataParallel as DDP
 torch.autograd.set_detect_anomaly(True)
 # from model import model
-from model import CGESwithGCSTE as CGES
+from model import CGESwithTanh as CGES
 from torch.cuda.amp import autocast
 import logging
 from model import STE
@@ -19,7 +19,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,6,7"
 
 
 '''
-torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29402 trainwithgcste.py
+torchrun --nnodes=1 --nproc_per_node=4 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29404 trainwithtanh.py
 
 '''
 

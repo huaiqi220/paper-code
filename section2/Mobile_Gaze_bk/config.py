@@ -1,11 +1,11 @@
 
-commit = "GC数据集、SingleNNPoG第一次训练"
+commit = "GC,k12,float32训练"
 
 
 
 
 ''' super params '''
-k = 4
+k = 12
 
 
 
@@ -21,7 +21,7 @@ hm_level = 4
 
 
 '''Data params'''
-batch_size = 256
+batch_size = 128
 epoch = 14
 lr = 1e-3
 train_decay_rate = 0.5
@@ -32,19 +32,21 @@ lr_decay_cycle = 2
 '''data path'''
 GazeCapture_root = "/home/hi/zhuzi/data/GCOutput/"
 MPIIFaceGaze_root = "/home/hi/zhuzi/data/mpii/"
+''' 1  2 3 4'''
+mpii_K = "1"
 
 cur_dataset = "GazeCapture"
 
 '''save path'''
 save_path = "./checkpoint"
-model_name = "SingleNNPoG"
+model_name = "MobileNetV2-Gaze-PoG"
 save_start_step = 6
 save_step = 2
 test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/hi/zhuzi/paper-code/section1/error_reduce/difNet/checkpoint/GazeCapture/GC数据集、DIF-NN-POG第一次训练/128_14_0.001/Iter_14_DIF_NN_POG.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/MPII/cat、原始fc2、k4、STE硬离散/128_14_0.001_1/Iter_14_MobileNetV2-Gaze-PoG.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2
@@ -61,12 +63,12 @@ cali_last_layer = False
 float32
 binary
 '''
-cali_vector_type = "binary"
+cali_vector_type = "float32"
 
 # k =  4 * c
 cali_image_num = 15
 
-cur_rank = 7
+cur_rank = 2
 
 
 

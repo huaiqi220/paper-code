@@ -1,8 +1,8 @@
 import torch
 import torch.distributed as dist
 import torch.nn as nn
-from dataloader import gc_reader
-from dataloader import mpii_reader 
+from dataloader import dif_gc_reader
+from dataloader import dif_mpii_reader
 import os
 import time
 import sys
@@ -46,10 +46,10 @@ def trainModel():
 
 
     if config.cur_dataset == "GazeCapture":
-        dataset = gc_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
+        dataset = dif_gc_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
                                 num_workers=4)
     elif config.cur_dataset == "MPII":
-        dataset = mpii_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
+        dataset = dif_mpii_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
                                 num_workers=4)
     
     '''不加这个，多机分布式训练时候会出问题'''

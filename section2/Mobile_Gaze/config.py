@@ -1,5 +1,8 @@
 
-commit = "训练一个k12的基准测试模型，在这个模型基础上测试校准样本数量，原始版本Fc2，cat特征合并方式"
+commit = "测试MPII"
+
+
+
 
 ''' super params '''
 k = 12
@@ -60,7 +63,7 @@ cali_last_layer = False
 float32
 binary
 '''
-cali_vector_type = "binary"
+cali_vector_type = "float32"
 
 # k =  4 * c
 cali_image_num = 4

@@ -17,7 +17,7 @@ torch.autograd.set_detect_anomaly(True)
 
 
 '''
-torchrun --nnodes=1 --nproc_per_node=7 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
+torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
 
 '''
 

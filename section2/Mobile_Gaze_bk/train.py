@@ -15,7 +15,7 @@ from model import CGES
 from torch.cuda.amp import autocast
 import logging
 from model import STE
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5,6,7"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5,6"
 
 
 '''
@@ -44,8 +44,7 @@ def trainModel():
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    # label_path = os.path.join(root_path,"Label","K_Fold_norm",config.mpii_K, "train")
-    label_path = os.path.join(root_path,"Label","model_fineture", "train")
+    label_path = os.path.join(root_path,"Label","K_Fold_norm",config.mpii_K, "train")
     label_path = [os.path.join(label_path, item) for item in os.listdir(label_path)]
 
 
@@ -87,14 +86,13 @@ def trainModel():
                     data["rects"] = data["rects"].to(device)
                     data["label"] = data["label"].to(device)
                     data["name"] = data["name"].to(device)
+                    # data["poglabel"] = data["poglabel"].to(device)
                     gaze_out = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["name"],"train")
                     loss = loss_func(gaze_out, data["label"])
                     user_id = data["name"]
                     origin_cali = ddp_model.module.cali_vectors[user_id]
                     cali_forward = STE.BinarizeSTE_origin.apply(origin_cali)
-                    entropy_reg = STE.compute_entropy_regularization(cali_forward)
-                    loss = 0.02 * entropy_reg + loss 
-                    # loss = 0.02 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
+                    loss = 0.02 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
                     print(STE.BinarizeSTE_origin.apply(origin_cali))
   
 

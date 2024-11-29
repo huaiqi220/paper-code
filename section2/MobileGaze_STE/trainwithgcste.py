@@ -92,7 +92,7 @@ def trainModel():
                     user_id = data["name"]
                     origin_cali = ddp_model.module.cali_vectors[user_id]
                     cali_forward = STE.BinarizeSTEWithL2.apply(origin_cali)
-                    # loss = 0.02 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
+                    loss = 0.02 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
                     print(STE.BinarizeSTEWithL2.apply(origin_cali))
   
 

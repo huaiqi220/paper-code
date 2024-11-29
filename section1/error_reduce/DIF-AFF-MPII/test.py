@@ -52,7 +52,11 @@ def test_func(name, testmodel, dataset, save_path, rank):
                 data1["grid"] = data1["grid"].to(device)
                 data1["rects"] = data1["rects"].to(device)
                 data1["label"] = data1["label"].to(device)
+<<<<<<< HEAD
                 # data1["name"] = data1["name"].to(device)
+=======
+                data1["name"] = data1["name"].to(device)
+>>>>>>> d569683c7f3084cf8f905addbe1ef1bc47f9296a
 
                 data2["face"] = data2["face"].to(device)
                 data2["left"] = data2["left"].to(device)
@@ -60,7 +64,11 @@ def test_func(name, testmodel, dataset, save_path, rank):
                 data2["grid"] = data2["grid"].to(device)
                 data2["rects"] = data2["rects"].to(device)
                 data2["label"] = data2["label"].to(device)
+<<<<<<< HEAD
                 # data2["name"] = data2["name"].to(device)
+=======
+                data2["name"] = data2["name"].to(device)
+>>>>>>> d569683c7f3084cf8f905addbe1ef1bc47f9296a
 
                 input1 = [data1["left"], data1["right"], data1["face"], data1["rects"]]
                 input2 = [data2["left"], data2["right"], data2["face"], data2["rects"]]
@@ -256,7 +264,11 @@ if __name__ == "__main__":
     elif config.cur_dataset == "MPII":
         root_path = config.MPIIFaceGaze_root
 
+<<<<<<< HEAD
     test_label_path = os.path.join(root_path, "Label", "K_Fold_diff","diflabel", config.cur_k,"test")
+=======
+    test_label_path = os.path.join(root_path, "Label", "diflabel", "test")
+>>>>>>> d569683c7f3084cf8f905addbe1ef1bc47f9296a
     label_list = [os.path.join(test_label_path, item) for item in os.listdir(test_label_path)]
     for label in tqdm(label_list):
         res = cali_test_func(root_path, label)

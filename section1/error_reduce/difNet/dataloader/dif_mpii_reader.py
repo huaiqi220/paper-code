@@ -69,7 +69,7 @@ class loader(Dataset):
     line = self.lines[idx]
     line = line.strip().split(" ")
 
-    name = str(line[0].split("/")[0][1:])
+    name = str(line[0].split("/")[0])
     # device = line[5]
     point = line[6]
 
@@ -113,7 +113,7 @@ class loader(Dataset):
             "right":torch.from_numpy(rimg).type(torch.FloatTensor),
             "face":torch.from_numpy(fimg).type(torch.FloatTensor),
             "grid":torch.from_numpy(grid).type(torch.FloatTensor),
-            "name":int(name),
+            "name":name,
             "rects":rect,
             "label":label,
             "device": "Android"}
@@ -132,7 +132,7 @@ class caliloader(Dataset):
     line = self.lines[idx]
     line = line.strip().split(" ")
 
-    name = str(line[0].split("/")[0][1:])
+    name = str(line[0].split("/")[0])
     # device = line[5]
     point = line[6]
 
@@ -176,7 +176,7 @@ class caliloader(Dataset):
             "right":torch.from_numpy(rimg).type(torch.FloatTensor),
             "face":torch.from_numpy(fimg).type(torch.FloatTensor),
             "grid":torch.from_numpy(grid).type(torch.FloatTensor),
-            "name":int(name),
+            "name":name,
             "rects":rect,
             "label":label,
             "device": "Android"}
@@ -187,10 +187,10 @@ def txtload(labelpath, imagepath, batch_size, shuffle=True, num_workers=0, heade
   # print(labelpath)
   # print(imagepath)
   dataset = loader(labelpath, imagepath, header)
-  distributed_sampler = DistributedSampler(dataset)
+  # distributed_sampler = DistributedSampler(dataset)
   print(f"[Read Data]: Total num: {len(dataset)}")
-  load = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,sampler=distributed_sampler,pin_memory=True)
-  # load = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers,pin_memory=True)
+  # load = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers,sampler=distributed_sampler,pin_memory=True)
+  load = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers,pin_memory=True)
   return load
 
 

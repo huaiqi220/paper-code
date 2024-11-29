@@ -19,7 +19,7 @@ from model import STE
 
 
 '''
-torchrun --nnodes=1 --nproc_per_node=6 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
+torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
 
 '''
 
@@ -44,8 +44,7 @@ def trainModel():
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    # label_path = os.path.join(root_path,"Label","K_Fold_norm",config.mpii_K, "train")
-    label_path = os.path.join(root_path,"Label","model_fineture", "train")
+    label_path = os.path.join(root_path,"Label","K_Fold_norm",config.mpii_K, "train")
     label_path = [os.path.join(label_path, item) for item in os.listdir(label_path)]
 
 

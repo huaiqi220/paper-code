@@ -1,5 +1,5 @@
 
-commit = "测试MPII"
+commit = "MPII数据集、DIFAFF第一次训练"
 
 
 
@@ -32,21 +32,21 @@ lr_decay_cycle = 2
 '''data path'''
 GazeCapture_root = "/home/hi/zhuzi/data/GCOutput/"
 MPIIFaceGaze_root = "/home/hi/zhuzi/data/mpii/"
-''' 1  2 3 4'''
-mpii_K = "1"
+cur_k = "4"
 
-cur_dataset = "GazeCapture"
+
+cur_dataset = "MPII"
 
 '''save path'''
 save_path = "./checkpoint"
-model_name = "MobileNetV2-Gaze-PoG"
+model_name = "DIFAFF"
 save_start_step = 6
 save_step = 2
 test_save_path = "./evaluation"
 
 
 '''test params'''
-test_model_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/checkpoint/GazeCapture/训练一个k12的基准测试模型，在这个模型基础上测试校准样本数量，原始版本Fc2，cat特征合并方式/128_14_0.001_1/Iter_14_MobileNetV2-Gaze-PoG.pt"
+test_model_path = "/home/hi/zhuzi/paper-code/section1/error_reduce/DIF-AFF-MPII/checkpoint/MPII/MPII数据集、DIFAFF第一次训练/128_14_0.001_4/Iter_14_DIFAFF.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2
@@ -63,12 +63,12 @@ cali_last_layer = False
 float32
 binary
 '''
-cali_vector_type = "float32"
+cali_vector_type = "binary"
 
 # k =  4 * c
-cali_image_num = 4
+cali_image_num = 15
 
-cur_rank = 3
+cur_rank = 7
 
 
 

@@ -5,7 +5,7 @@ import random
 from dataloader import gc_reader
 from dataloader import mpii_reader
 import torch
-from model.CGES import mobile_gaze_2d as model
+from model.CGESwithGCSTE import mobile_gaze_2d as model
 from torch import nn
 import time
 import math
@@ -289,7 +289,7 @@ def cali_test_func(root_path, label):
     rank = config.cur_rank
     k = config.k
     cur_id = label.split("/")[-1].split(".")[0]
-    cali_folder = os.path.join(config.test_save_path,config.cur_dataset,config.cali_vector_type,config.commit, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer) + "_" + str(config.cali_lr) + "_" + str(config.k) + "_" + config.mpii_K, cur_id)
+    cali_folder = os.path.join(config.test_save_path,config.cur_dataset,config.commit, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer) + "_" + str(config.cali_lr) + "_" + str(config.k) + "_" + config.mpii_K, cur_id)
 
     all_label = []
     with open(label, "r") as f:
@@ -337,7 +337,7 @@ def cali_test_func(root_path, label):
         f.write("2D Tensor:\n")
         for id in file_list:
             id = int(id)
-            line = STE.BinarizeSTE_origin.apply(lines[id])
+            line = STE.BinarizeSTEWithL2.apply(lines[id])
             # sigmoid_output = torch.sigmoid(lines[id])
             # binary_output = (sigmoid_output > 0.5).float()
             f.write(str(id) + " " + str(line) + '\n')

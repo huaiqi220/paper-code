@@ -8,7 +8,7 @@ import pandas as pd
 from scipy import stats
 import os
 
-log_path = "/home/hi/zhuzi/paper-code/section2/Mobile_Gaze/evaluation/GazeCapture/训练一个k12的基准测试模型，在这个模型基础上测试校准样本数量，原始版本Fc2，cat特征合并方式/cali_num_4_False_1e-07_12_1"
+log_path = "./evaluation/GazeCapture/cat、低复杂度fc2、k4、STE硬离散/cali_num_15_False_1e-07_4"
 data = []
 persons = os.listdir(log_path)
 
@@ -19,7 +19,7 @@ for person in persons:
     cali_res = os.path.join(cur_path, "calibration_test")
 
     # 读取 origin_error
-    # print(origin_res)
+    print(origin_res)
     with open(os.path.join(origin_res, "error.log"), "r") as f:
         origin_error = float(f.readlines()[-1].split(": ")[-1])
 

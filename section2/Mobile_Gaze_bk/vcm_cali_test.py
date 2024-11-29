@@ -304,7 +304,7 @@ def cali_test_func(root_path, label):
     # 部分用户采集图片很少
 
 
-    if len(remaining_lines) < 10  or  len(selected_cali_lines) < 8:
+    if len(remaining_lines) < 10  or  len(selected_cali_lines) < 10:
         print("该用户数据较少，跳过测试")
         return 
     
@@ -352,6 +352,7 @@ def cali_test_func(root_path, label):
     if config.cali_vector_type == "float32":
         calimodel,cali_vec = float_cali_func("name",calimodel,cali_train_dataset,cali_folder,rank)
     else:
+        pass
         cali_vec = binary_cali_func("name",calimodel,cali_train_dataset,cali_folder,rank)
 
     # 测试计算好的函数
@@ -366,8 +367,7 @@ if __name__ == "__main__":
     elif config.cur_dataset == "MPII":
         root_path = config.MPIIFaceGaze_root
 
-    # test_label_path = os.path.join(root_path,"Label","K_Fold_norm",config.mpii_K, "test")
-    test_label_path = os.path.join(root_path,"Label","model_fineture", "test")
+    test_label_path = os.path.join(root_path,"Label","K_Fold_norm",config.mpii_K, "test")
     label_list = [os.path.join(test_label_path, item) for item in os.listdir(test_label_path)]
     for label in tqdm(label_list):
         res = cali_test_func(root_path, label)

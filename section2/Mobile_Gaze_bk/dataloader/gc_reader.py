@@ -70,62 +70,7 @@ class loader(Dataset):
     line = line.strip().split(" ")
 
     name = line[0]
-    # device = line[5]
-    point = line[4]
-    faceb = line[6].split(",")
-    leftb = line[7].split(",")
-    rightb = line[8].split(",")
-    bbox = faceb + leftb + rightb
-    face = line[0]
-    lefteye = line[1]
-    righteye = line[2]
-    grid = line[3]
-
-    label = np.array(point.split(",")).astype("float")
-    label = torch.from_numpy(label).type(torch.FloatTensor)
-
-    rect = np.array(bbox).astype("float")
-    rect = torch.from_numpy(rect).type(torch.FloatTensor)
-
-    rimg = cv2.imread(os.path.join(self.root, righteye))
-    rimg = cv2.resize(rimg, (48, 72))/255.0
-    rimg = rimg.transpose(2, 0, 1)
-
-    limg = cv2.imread(os.path.join(self.root, lefteye))
-    limg = cv2.resize(limg, (48, 72))/255.0
-    limg = limg.transpose(2, 0, 1)
-    
-    fimg = cv2.imread(os.path.join(self.root, face))
-    fimg = cv2.resize(fimg, (224, 224))/255.0
-    fimg = fimg.transpose(2, 0, 1)
- 
-    grid = cv2.imread(os.path.join(self.root, grid), 0)
-    grid = np.expand_dims(grid, 0)
-
-    img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
-            "right":torch.from_numpy(rimg).type(torch.FloatTensor),
-            "face":torch.from_numpy(fimg).type(torch.FloatTensor),
-            # "grid":torch.from_numpy(grid).type(torch.FloatTensor),
-            "name":name,
-            "rects":rect,
-            "label":label,
-            "device": "Android"}
-
-    return img
-
-class caliloader(Dataset): 
-  def __init__(self, lines, root, header=True):
-    self.lines = lines
-    self.root = root
-
-  def __len__(self):
-    return len(self.lines)
-
-  def __getitem__(self, idx):
-    line = self.lines[idx]
-    line = line.strip().split(" ")
-
-    name = line[0]
+    cur_person_id = line[0].split("/")[0]
     # device = line[5]
     point = line[4]
     faceb = line[6].split(",")
@@ -161,8 +106,65 @@ class caliloader(Dataset):
     img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
             "right":torch.from_numpy(rimg).type(torch.FloatTensor),
             "face":torch.from_numpy(fimg).type(torch.FloatTensor),
-            # "grid":torch.from_numpy(grid).type(torch.FloatTensor),
-            "name":name,
+            "grid":torch.from_numpy(grid).type(torch.FloatTensor),
+            "name":int(cur_person_id),
+            "rects":rect,
+            "label":label,
+            "device": "Android"}
+
+    return img
+
+class caliloader(Dataset): 
+  def __init__(self, lines, root, header=True):
+    self.lines = lines
+    self.root = root
+
+  def __len__(self):
+    return len(self.lines)
+
+  def __getitem__(self, idx):
+    line = self.lines[idx]
+    line = line.strip().split(" ")
+
+    name = line[0]
+    cur_person_id = line[0].split("/")[0]
+    # device = line[5]
+    point = line[4]
+    faceb = line[6].split(",")
+    leftb = line[7].split(",")
+    rightb = line[8].split(",")
+    bbox = faceb + leftb + rightb
+    face = line[0]
+    lefteye = line[1]
+    righteye = line[2]
+    grid = line[3]
+
+    label = np.array(point.split(",")).astype("float")
+    label = torch.from_numpy(label).type(torch.FloatTensor)
+
+    rect = np.array(bbox).astype("float")
+    rect = torch.from_numpy(rect).type(torch.FloatTensor)
+
+    rimg = cv2.imread(os.path.join(self.root, righteye))
+    rimg = cv2.resize(rimg, (112, 112))/255.0
+    rimg = rimg.transpose(2, 0, 1)
+
+    limg = cv2.imread(os.path.join(self.root, lefteye))
+    limg = cv2.resize(limg, (112, 112))/255.0
+    limg = limg.transpose(2, 0, 1)
+    
+    fimg = cv2.imread(os.path.join(self.root, face))
+    fimg = cv2.resize(fimg, (224, 224))/255.0
+    fimg = fimg.transpose(2, 0, 1)
+ 
+    grid = cv2.imread(os.path.join(self.root, grid), 0)
+    grid = np.expand_dims(grid, 0)
+
+    img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
+            "right":torch.from_numpy(rimg).type(torch.FloatTensor),
+            "face":torch.from_numpy(fimg).type(torch.FloatTensor),
+            "grid":torch.from_numpy(grid).type(torch.FloatTensor),
+            "name":int(cur_person_id),
             "rects":rect,
             "label":label,
             "device": "Android"}

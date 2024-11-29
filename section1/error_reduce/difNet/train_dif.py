@@ -1,14 +1,14 @@
 import torch
 import torch.distributed as dist
 import torch.nn as nn
-from dataloader import gc_reader
-from dataloader import mpii_reader 
+from dataloader import dif_gc_reader
+from dataloader import dif_mpii_reader
 import os
 import time
 import sys
 import config
 from torch.nn.parallel import DistributedDataParallel as DDP
-from model import dif_aff_net
+from model import crossNet
 
 torch.autograd.set_detect_anomaly(True)
 
@@ -46,16 +46,16 @@ def trainModel():
 
 
     if config.cur_dataset == "GazeCapture":
-        dataset = gc_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
+        dataset = dif_gc_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
                                 num_workers=4)
     elif config.cur_dataset == "MPII":
-        dataset = mpii_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
+        dataset = dif_mpii_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
                                 num_workers=4)
     
     '''不加这个，多机分布式训练时候会出问题'''
     device_id = rank % torch.cuda.device_count()   
     device = torch.device(f"cuda:{device_id}")
-    ddp_model = DDP(dif_aff_net.difaffnet().to(device))
+    ddp_model = DDP(crossNet.DifNNPoG().to(device))
 
     print("构建优化器")
     loss_func = nn.MSELoss()
@@ -95,8 +95,8 @@ def trainModel():
                     data2["label"] = data2["label"].to(device)
                     data2["name"] = data2["name"].to(device)
 
-                    input1 = [data1["left"],data1["right"],data1["face"],data1["rects"]]
-                    input2 = [data2["left"],data2["right"],data2["face"],data2["rects"]]
+                    input1 = [data1["left"],data1["right"]]
+                    input2 = [data2["left"],data2["right"]]
                     gaze_out = ddp_model(input1, input2)
                     loss = loss_func(gaze_out, label)
   

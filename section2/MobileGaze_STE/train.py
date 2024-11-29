@@ -1,3 +1,4 @@
+
 import torch
 import torch.distributed as dist
 import torch.nn as nn
@@ -8,12 +9,13 @@ import time
 import sys
 import config
 from torch.nn.parallel import DistributedDataParallel as DDP
-from model import crossNet
-
 torch.autograd.set_detect_anomaly(True)
-
-
-# os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5,6"
+# from model import model
+from model import CGES
+from torch.cuda.amp import autocast
+import logging
+from model import STE
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5,6,7"
 
 
 '''
@@ -37,11 +39,13 @@ def trainModel():
 
     
     model_name = config.model_name
-    save_path = os.path.join(config.save_path, config.cur_dataset, config.commit,
-                             f"{config.batch_size}_{config.epoch}_{config.lr}")
-    os.makedirs(save_path, exist_ok=True)
+    save_path = os.path.join(config.save_path,config.cur_dataset,config.commit,
+                             str(config.batch_size) +"_" + str(config.epoch) + "_" + str(config.lr)+"_" + config.mpii_K)
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
 
-    label_path = os.path.join(root_path,"Label","diflabel", "train")
+    # label_path = os.path.join(root_path,"Label","K_Fold_norm",config.mpii_K, "train")
+    label_path = os.path.join(root_path,"Label","model_fineture", "train")
     label_path = [os.path.join(label_path, item) for item in os.listdir(label_path)]
 
 
@@ -54,8 +58,9 @@ def trainModel():
     
     '''不加这个，多机分布式训练时候会出问题'''
     device_id = rank % torch.cuda.device_count()   
-    device = torch.device(f"cuda:{device_id}")
-    ddp_model = DDP(crossNet.DifNNPoG().to(device))
+    ddp_model = CGES.mobile_gaze_2d(config.hm_size, config.k, 25 * 25).to(rank)
+    device = torch.device("cuda" + ":" + str(rank))
+    ddp_model = DDP(ddp_model)
 
     print("构建优化器")
     loss_func = nn.MSELoss()
@@ -75,30 +80,22 @@ def trainModel():
             for i, data in enumerate(dataset):
                 optimizer.zero_grad()
                 with torch.amp.autocast("cuda"):
-                    data1 = data[0]
-                    data2 = data[1]
-                    label = data[2].to(device)
-                    data1["face"] = data1["face"].to(device)
-                    data1["left"] = data1["left"].to(device)
-                    data1["right"] = data1["right"].to(device)
-                    data1["grid"] = data1["grid"].to(device)
-                    data1["rects"] = data1["rects"].to(device)
-                    data1["label"] = data1["label"].to(device)
-                    data1["name"] = data1["name"].to(device)
-
-
-                    data2["face"] = data2["face"].to(device)
-                    data2["left"] = data2["left"].to(device)
-                    data2["right"] = data2["right"].to(device)
-                    data2["grid"] = data2["grid"].to(device)
-                    data2["rects"] = data2["rects"].to(device)
-                    data2["label"] = data2["label"].to(device)
-                    data2["name"] = data2["name"].to(device)
-
-                    input1 = [data1["left"],data1["right"]]
-                    input2 = [data2["left"],data2["right"]]
-                    gaze_out = ddp_model(input1, input2)
-                    loss = loss_func(gaze_out, label)
+                    data["face"] = data["face"].to(device)
+                    data["left"] = data["left"].to(device)
+                    data["right"] = data["right"].to(device)
+                    data["grid"] = data["grid"].to(device)
+                    data["rects"] = data["rects"].to(device)
+                    data["label"] = data["label"].to(device)
+                    data["name"] = data["name"].to(device)
+                    gaze_out = ddp_model(data["face"], data["left"], data["right"], data["grid"], data["name"],"train")
+                    loss = loss_func(gaze_out, data["label"])
+                    user_id = data["name"]
+                    origin_cali = ddp_model.module.cali_vectors[user_id]
+                    cali_forward = STE.BinarizeSTE_origin.apply(origin_cali)
+                    entropy_reg = STE.compute_entropy_regularization(cali_forward)
+                    loss = 0.02 * entropy_reg + loss 
+                    # loss = 0.02 * torch.mean((origin_cali - cali_forward.detach()) ** 2) + loss      
+                    print(STE.BinarizeSTE_origin.apply(origin_cali))
   
 
                 loss.backward()

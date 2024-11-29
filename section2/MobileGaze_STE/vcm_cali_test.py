@@ -5,7 +5,7 @@ import random
 from dataloader import gc_reader
 from dataloader import mpii_reader
 import torch
-from model.CGES import mobile_gaze_2d as model
+from model.CGESwithGCSTE import mobile_gaze_2d as model
 from torch import nn
 import time
 import math
@@ -289,7 +289,7 @@ def cali_test_func(root_path, label):
     rank = config.cur_rank
     k = config.k
     cur_id = label.split("/")[-1].split(".")[0]
-    cali_folder = os.path.join(config.test_save_path,config.cur_dataset,config.cali_vector_type,config.commit, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer) + "_" + str(config.cali_lr) + "_" + str(config.k) + "_" + config.mpii_K, cur_id)
+    cali_folder = os.path.join(config.test_save_path,config.cur_dataset,config.commit, "cali_num_" + str(config.cali_image_num) +"_" + str(config.cali_last_layer) + "_" + str(config.cali_lr) + "_" + str(config.k) + "_" + config.mpii_K, cur_id)
 
     all_label = []
     with open(label, "r") as f:
@@ -304,7 +304,7 @@ def cali_test_func(root_path, label):
     # 部分用户采集图片很少
 
 
-    if len(remaining_lines) < 10  or  len(selected_cali_lines) < 10:
+    if len(remaining_lines) < 10  or  len(selected_cali_lines) < 8:
         print("该用户数据较少，跳过测试")
         return 
     
@@ -337,7 +337,7 @@ def cali_test_func(root_path, label):
         f.write("2D Tensor:\n")
         for id in file_list:
             id = int(id)
-            line = STE.BinarizeSTE_origin.apply(lines[id])
+            line = STE.BinarizeSTEWithL2.apply(lines[id])
             # sigmoid_output = torch.sigmoid(lines[id])
             # binary_output = (sigmoid_output > 0.5).float()
             f.write(str(id) + " " + str(line) + '\n')
@@ -352,7 +352,6 @@ def cali_test_func(root_path, label):
     if config.cali_vector_type == "float32":
         calimodel,cali_vec = float_cali_func("name",calimodel,cali_train_dataset,cali_folder,rank)
     else:
-        pass
         cali_vec = binary_cali_func("name",calimodel,cali_train_dataset,cali_folder,rank)
 
     # 测试计算好的函数
@@ -367,7 +366,8 @@ if __name__ == "__main__":
     elif config.cur_dataset == "MPII":
         root_path = config.MPIIFaceGaze_root
 
-    test_label_path = os.path.join(root_path,"Label","K_Fold_norm",config.mpii_K, "test")
+    # test_label_path = os.path.join(root_path,"Label","K_Fold_norm",config.mpii_K, "test")
+    test_label_path = os.path.join(root_path,"Label","model_fineture", "test")
     label_list = [os.path.join(test_label_path, item) for item in os.listdir(test_label_path)]
     for label in tqdm(label_list):
         res = cali_test_func(root_path, label)

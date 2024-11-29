@@ -8,7 +8,11 @@ import pandas as pd
 from scipy import stats
 import os
 
+<<<<<<< HEAD
+log_path = "/home/hi/zhuzi/paper-code/section2/MobileGaze_STE/evaluation/GazeCapture/GC数据集梯度约束STE，不加loss/cali_num_15_False_1e-07_12_1"
+=======
 log_path = "/home/hi/zhuzi/paper-code/section2/MobileGaze_STE/evaluation/GazeCapture/GC数据集梯度约束STE，加loss处理前后约束，scale0.02/cali_num_15_False_1e-07_12_1"
+>>>>>>> d569683c7f3084cf8f905addbe1ef1bc47f9296a
 data = []
 persons = os.listdir(log_path)
 

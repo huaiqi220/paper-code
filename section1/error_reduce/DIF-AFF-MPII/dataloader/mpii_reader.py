@@ -66,59 +66,65 @@ class loader(Dataset):
     return len(self.lines)
 
   def __getitem__(self, idx):
+    def func(line):
+      line = line.strip().split(" ")
+      name = str(line[0].split("/")[0])
+      # device = line[5]
+      point = line[6]
+
+      ratio = line[9].split(",")
+
+      label = np.array(point.split(",")).astype("float")
+      ratio = np.array(ratio).astype("float")
+      label = label*ratio*0.1
+      label = torch.from_numpy(label).type(torch.FloatTensor)
+      # faceb = line[6].split(",")
+      # leftb = line[7].split(",")
+      # rightb = line[8].split(",")
+      rect = [float(p) for p in line[13].split(",")]
+      # bbox = faceb + leftb + rightb
+      face = line[0]
+      # full = line[1]
+      lefteye = line[1]
+      righteye = line[2]
+      grid = line[3]
+
+      rect = np.array(rect).astype("float")
+      rect = torch.from_numpy(rect).type(torch.FloatTensor)
+
+      rimg = cv2.imread(os.path.join(self.root, righteye))
+      rimg = cv2.resize(rimg, (112, 112))/255.0
+      rimg = rimg.transpose(2, 0, 1)
+
+      limg = cv2.imread(os.path.join(self.root, lefteye))
+      limg = cv2.resize(limg, (112, 112))/255.0
+      limg = limg.transpose(2, 0, 1)
+      
+      fimg = cv2.imread(os.path.join(self.root, face))
+      fimg = cv2.resize(fimg, (224, 224))/255.0
+      fimg = fimg.transpose(2, 0, 1)
+  
+      grid = cv2.imread(os.path.join(self.root, grid), 0)
+      # grid = cv2.resize(grid, (112, 112))/255.0
+      grid = np.expand_dims(grid, 0)
+
+      img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
+              "right":torch.from_numpy(rimg).type(torch.FloatTensor),
+              "face":torch.from_numpy(fimg).type(torch.FloatTensor),
+              "grid":torch.from_numpy(grid).type(torch.FloatTensor),
+              "name":name,
+              "rects":rect,
+              "label":label,
+              "device": "Android"}
+      
+      return img
     line = self.lines[idx]
-    line = line.strip().split(" ")
+    line1 = line.split(" || ")[0]
+    line2 = line.split(" || ")[1]
+    img1 = func(line1)
+    img2 = func(line2)
 
-    name = str(line[0].split("/")[0])
-    # device = line[5]
-    point = line[6]
-
-    ratio = line[9].split(",")
-
-    label = np.array(point.split(",")).astype("float")
-    ratio = np.array(ratio).astype("float")
-    label = label*ratio*0.1
-    label = torch.from_numpy(label).type(torch.FloatTensor)
-    # faceb = line[6].split(",")
-    # leftb = line[7].split(",")
-    # rightb = line[8].split(",")
-    rect = [float(p) for p in line[13].split(",")]
-    # bbox = faceb + leftb + rightb
-    face = line[0]
-    # full = line[1]
-    lefteye = line[1]
-    righteye = line[2]
-    grid = line[3]
-
-    rect = np.array(rect).astype("float")
-    rect = torch.from_numpy(rect).type(torch.FloatTensor)
-
-    rimg = cv2.imread(os.path.join(self.root, righteye))
-    rimg = cv2.resize(rimg, (112, 112))/255.0
-    rimg = rimg.transpose(2, 0, 1)
-
-    limg = cv2.imread(os.path.join(self.root, lefteye))
-    limg = cv2.resize(limg, (112, 112))/255.0
-    limg = limg.transpose(2, 0, 1)
-    
-    fimg = cv2.imread(os.path.join(self.root, face))
-    fimg = cv2.resize(fimg, (224, 224))/255.0
-    fimg = fimg.transpose(2, 0, 1)
- 
-    grid = cv2.imread(os.path.join(self.root, grid), 0)
-    # grid = cv2.resize(grid, (112, 112))/255.0
-    grid = np.expand_dims(grid, 0)
-
-    img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
-            "right":torch.from_numpy(rimg).type(torch.FloatTensor),
-            "face":torch.from_numpy(fimg).type(torch.FloatTensor),
-            "grid":torch.from_numpy(grid).type(torch.FloatTensor),
-            "name":name,
-            "rects":rect,
-            "label":label,
-            "device": "Android"}
-
-    return img
+    return [img1,img2,img2["label"]-img1["label"]]
 
 class caliloader(Dataset):
   def __init__(self, lines, root, header=True):
@@ -129,59 +135,65 @@ class caliloader(Dataset):
     return len(self.lines)
   
   def __getitem__(self, idx):
+    def func(line):
+      line = line.strip().split(" ")
+      name = str(line[0].split("/")[0])
+      # device = line[5]
+      point = line[6]
+
+      ratio = line[9].split(",")
+
+      label = np.array(point.split(",")).astype("float")
+      ratio = np.array(ratio).astype("float")
+      label = label*ratio*0.1
+      label = torch.from_numpy(label).type(torch.FloatTensor)
+      # faceb = line[6].split(",")
+      # leftb = line[7].split(",")
+      # rightb = line[8].split(",")
+      rect = [float(p) for p in line[13].split(",")]
+      # bbox = faceb + leftb + rightb
+      face = line[0]
+      # full = line[1]
+      lefteye = line[1]
+      righteye = line[2]
+      grid = line[3]
+
+      rect = np.array(rect).astype("float")
+      rect = torch.from_numpy(rect).type(torch.FloatTensor)
+
+      rimg = cv2.imread(os.path.join(self.root, righteye))
+      rimg = cv2.resize(rimg, (112, 112))/255.0
+      rimg = rimg.transpose(2, 0, 1)
+
+      limg = cv2.imread(os.path.join(self.root, lefteye))
+      limg = cv2.resize(limg, (112, 112))/255.0
+      limg = limg.transpose(2, 0, 1)
+      
+      fimg = cv2.imread(os.path.join(self.root, face))
+      fimg = cv2.resize(fimg, (224, 224))/255.0
+      fimg = fimg.transpose(2, 0, 1)
+  
+      grid = cv2.imread(os.path.join(self.root, grid), 0)
+      # grid = cv2.resize(grid, (112, 112))/255.0
+      grid = np.expand_dims(grid, 0)
+
+      img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
+              "right":torch.from_numpy(rimg).type(torch.FloatTensor),
+              "face":torch.from_numpy(fimg).type(torch.FloatTensor),
+              "grid":torch.from_numpy(grid).type(torch.FloatTensor),
+              "name":name,
+              "rects":rect,
+              "label":label,
+              "device": "Android"}
+      
+      return img
     line = self.lines[idx]
-    line = line.strip().split(" ")
+    line1 = line.split(" || ")[0]
+    line2 = line.split(" || ")[1]
+    img1 = func(line1)
+    img2 = func(line2)
 
-    name = str(line[0].split("/")[0])
-    # device = line[5]
-    point = line[6]
-
-    ratio = line[9].split(",")
-
-    label = np.array(point.split(",")).astype("float")
-    ratio = np.array(ratio).astype("float")
-    label = label*ratio*0.1
-    label = torch.from_numpy(label).type(torch.FloatTensor)
-    # faceb = line[6].split(",")
-    # leftb = line[7].split(",")
-    # rightb = line[8].split(",")
-    rect = [float(p) for p in line[13].split(",")]
-    # bbox = faceb + leftb + rightb
-    face = line[0]
-    # full = line[1]
-    lefteye = line[1]
-    righteye = line[2]
-    grid = line[3]
-
-    rect = np.array(rect).astype("float")
-    rect = torch.from_numpy(rect).type(torch.FloatTensor)
-
-    rimg = cv2.imread(os.path.join(self.root, righteye))
-    rimg = cv2.resize(rimg, (112, 112))/255.0
-    rimg = rimg.transpose(2, 0, 1)
-
-    limg = cv2.imread(os.path.join(self.root, lefteye))
-    limg = cv2.resize(limg, (112, 112))/255.0
-    limg = limg.transpose(2, 0, 1)
-    
-    fimg = cv2.imread(os.path.join(self.root, face))
-    fimg = cv2.resize(fimg, (224, 224))/255.0
-    fimg = fimg.transpose(2, 0, 1)
- 
-    grid = cv2.imread(os.path.join(self.root, grid), 0)
-    # grid = cv2.resize(grid, (112, 112))/255.0
-    grid = np.expand_dims(grid, 0)
-
-    img = {"left":torch.from_numpy(limg).type(torch.FloatTensor),
-            "right":torch.from_numpy(rimg).type(torch.FloatTensor),
-            "face":torch.from_numpy(fimg).type(torch.FloatTensor),
-            "grid":torch.from_numpy(grid).type(torch.FloatTensor),
-            "name":name,
-            "rects":rect,
-            "label":label,
-            "device": "Android"}
-
-    return img
+    return [img1,img2,img2["label"]-img1["label"]]
 
 def txtload(labelpath, imagepath, batch_size, shuffle=True, num_workers=0, header=True):
   # print(labelpath)
@@ -201,8 +213,8 @@ def calitxtload(lines, imagepath, batch_size, shuffle=True, num_workers=0, heade
   return load
 
 if __name__ == "__main__":
-  label = "/data/4_gc/2_gcout/Label/train"
-  image = "/data/4_gc/2_gcout/Image"
+  label = "/home/hi/zhuzi/data/mpii/Label/K_Fold_diff/diflabel/1/train"
+  image = "/home/hi/zhuzi/data/mpii/Image"
   trains = os.listdir(label)
   trains = [os.path.join(label, j) for j in trains]
   print(trains)

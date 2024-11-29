@@ -1,5 +1,9 @@
 
+<<<<<<< HEAD
+commit = "GC数据集原始版本STE，不加loss"
+=======
 commit = "GC数据集原始STE,loss加熵约束,scale0.02"
+>>>>>>> d569683c7f3084cf8f905addbe1ef1bc47f9296a
 
 ''' super params '''
 k = 12
@@ -53,7 +57,15 @@ test_save_path = "./evaluation"
 
 
 '''test params'''
+<<<<<<< HEAD
 test_model_path = "/home/hi/zhuzi/paper-code/section2/MobileGaze_STE/checkpoint/GazeCapture/GC数据集原始STE,loss加熵约束,scale0.02/128_14_0.001_1/Iter_14_MobileNetV2-Gaze-PoG.pt"
+=======
+<<<<<<< HEAD
+test_model_path = "/home/hi/zhuzi/paper-code/section2/MobileGaze_STE/checkpoint/GazeCapture/GC数据集原始版本STE，不加loss/128_14_0.001_1/Iter_14_MobileNetV2-Gaze-PoG.pt"
+=======
+test_model_path = "/home/hi/zhuzi/paper-code/section2/MobileGaze_STE/checkpoint/GazeCapture/GC数据集梯度约束STE，加loss处理前后约束，scale0.02/128_14_0.001_1/Iter_14_MobileNetV2-Gaze-PoG.pt"
+>>>>>>> d569683c7f3084cf8f905addbe1ef1bc47f9296a
+>>>>>>> 6adca7ddec5a180c77cb66178f9fe01a40ce7b8b
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2
@@ -75,7 +87,11 @@ cali_vector_type = "binary"
 # k =  4 * c
 cali_image_num = 15
 
+<<<<<<< HEAD
+cur_rank = 6
+=======
 cur_rank = 2
+>>>>>>> d569683c7f3084cf8f905addbe1ef1bc47f9296a
 
 
 

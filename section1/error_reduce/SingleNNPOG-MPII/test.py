@@ -2,10 +2,10 @@ import os
 import sys
 import config
 import random
-from dataloader import dif_gc_reader as gc_reader
-from dataloader import dif_mpii_reader as mpii_reader
+from dataloader import gc_reader
+from dataloader import mpii_reader
 import torch
-from model import crossNet
+from crossNet import SingleNNPoG 
 from torch import nn
 import time
 import math
@@ -43,28 +43,11 @@ def test_func(name, testmodel, dataset, save_path, rank):
         with open(os.path.join(save_path, "error.log"), 'w') as outfile:
             outfile.write("subjcet,name,x,y,labelx,labely,error\n")
             for j, data in enumerate(dataset):
-                data1 = data[0]
-                data2 = data[1]
-                labels = data[2]
-                # data1["face"] = data1["face"].to(device)
-                data1["left"] = data1["left"].to(device)
-                data1["right"] = data1["right"].to(device)
-                # data1["grid"] = data1["grid"].to(device)
-                # data1["rects"] = data1["rects"].to(device)
-                data1["label"] = data1["label"].to(device)
-                # data1["name"] = data1["name"].to(device)
-
-                # data2["face"] = data2["face"].to(device)
-                data2["left"] = data2["left"].to(device)
-                data2["right"] = data2["right"].to(device)
-                # data2["grid"] = data2["grid"].to(device)
-                # data2["rects"] = data2["rects"].to(device)
-                data2["label"] = data2["label"].to(device)
-                # data2["name"] = data2["name"].to(device)
-
-                input1 = [data1["left"], data1["right"]]
-                input2 = [data2["left"], data2["right"]]
-                gazes = testmodel(input1, input2)
+                data["left"] = data["left"].to(device)
+                data["right"] = data["right"].to(device)
+                data["label"] = data["label"]
+                labels = data["label"]
+                gazes = testmodel(data["left"], data["right"]) 
 
                 print(f'\r[Batch : {j}]', end='')
                 # print(f'gazes: {gazes.shape}')
@@ -237,7 +220,7 @@ def cali_test_func(root_path, label):
                                                    True, 8, True)
 
     test_model_path = config.test_model_path
-    testmodel = crossNet.DifNNPoG()
+    testmodel = SingleNNPoG()
     statedict = torch.load(test_model_path)
     new_state_dict = {}
     for key, value in statedict.items():
@@ -256,7 +239,7 @@ if __name__ == "__main__":
     elif config.cur_dataset == "MPII":
         root_path = config.MPIIFaceGaze_root
 
-    test_label_path = os.path.join(root_path,"Label","K_Fold_diff","diflabel", config.cur_k,"test")
+    test_label_path = os.path.join(root_path,"Label","K_Fold_diff","diflabel",config.cur_k, "test")
     label_list = [os.path.join(test_label_path, item) for item in os.listdir(test_label_path)]
     for label in tqdm(label_list):
         res = cali_test_func(root_path, label)

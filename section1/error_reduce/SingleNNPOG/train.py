@@ -1,23 +1,22 @@
+
 import torch
 import torch.distributed as dist
 import torch.nn as nn
-from dataloader import dif_gc_reader
-from dataloader import dif_mpii_reader
+from dataloader import gc_reader
+from dataloader import mpii_reader 
 import os
 import time
 import sys
 import config
 from torch.nn.parallel import DistributedDataParallel as DDP
-from model import crossNet
-
 torch.autograd.set_detect_anomaly(True)
-
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "3,4,5,6,7"
+from crossNet import SingleNNPoG
+from torch.cuda.amp import autocast
+import logging
 
 
 '''
-torchrun --nnodes=1 --nproc_per_node=5 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train_dif.py
+torchrun --nnodes=1 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29401 train.py
 
 '''
 
@@ -37,25 +36,27 @@ def trainModel():
 
     
     model_name = config.model_name
-    save_path = os.path.join(config.save_path, config.cur_dataset, config.commit,
-                             f"{config.batch_size}_{config.epoch}_{config.lr}_{config.cur_k}")
-    os.makedirs(save_path, exist_ok=True)
+    save_path = os.path.join(config.save_path,config.cur_dataset,
+                             str(config.batch_size) +"_" + str(config.epoch) + "_" + str(config.lr))
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
 
-    label_path = os.path.join(root_path,"Label","K_Fold_diff","diflabel", config.cur_k,"train")
+    label_path = os.path.join(root_path,"Label","model_fineture", "train")
     label_path = [os.path.join(label_path, item) for item in os.listdir(label_path)]
 
 
     if config.cur_dataset == "GazeCapture":
-        dataset = dif_gc_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
+        dataset = gc_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
                                 num_workers=4)
     elif config.cur_dataset == "MPII":
-        dataset = dif_mpii_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
+        dataset = mpii_reader.txtload(label_path, os.path.join(root_path, "Image"), config.batch_size, shuffle=True,
                                 num_workers=4)
     
     '''不加这个，多机分布式训练时候会出问题'''
     device_id = rank % torch.cuda.device_count()   
-    device = torch.device(f"cuda:{device_id}")
-    ddp_model = DDP(crossNet.DifNNPoG().to(device))
+    ddp_model = SingleNNPoG().to(rank)
+    device = torch.device("cuda" + ":" + str(rank))
+    ddp_model = DDP(ddp_model)
 
     print("构建优化器")
     loss_func = nn.MSELoss()
@@ -74,32 +75,12 @@ def trainModel():
             time_begin = time.time()
             for i, data in enumerate(dataset):
                 optimizer.zero_grad()
-                with torch.amp.autocast("cuda"):
-                    data1 = data[0]
-                    data2 = data[1]
-                    label = data[2].to(device)
-                    data1["face"] = data1["face"].to(device)
-                    data1["left"] = data1["left"].to(device)
-                    data1["right"] = data1["right"].to(device)
-                    data1["grid"] = data1["grid"].to(device)
-                    data1["rects"] = data1["rects"].to(device)
-                    data1["label"] = data1["label"].to(device)
-                    # data1["name"] = data1["name"].to(device)
-
-
-                    data2["face"] = data2["face"].to(device)
-                    data2["left"] = data2["left"].to(device)
-                    data2["right"] = data2["right"].to(device)
-                    data2["grid"] = data2["grid"].to(device)
-                    data2["rects"] = data2["rects"].to(device)
-                    data2["label"] = data2["label"].to(device)
-                    # data2["name"] = data2["name"].to(device)
-
-                    input1 = [data1["left"],data1["right"]]
-                    input2 = [data2["left"],data2["right"]]
-                    gaze_out = ddp_model(input1, input2)
-                    loss = loss_func(gaze_out, label)
-  
+                with autocast():
+                    data["left"] = data["left"].to(device)
+                    data["right"] = data["right"].to(device)
+                    data["label"] = data["label"].to(device)
+                    gaze_out = ddp_model(data["left"], data["right"])
+                    loss = loss_func(gaze_out, data["label"])        
 
                 loss.backward()
                 optimizer.step()
@@ -111,7 +92,6 @@ def trainModel():
                 print(log)
                 sys.stdout.flush()
                 outfile.flush()
-
 
             if epoch > config.save_start_step and epoch % config.save_step == 0  and rank == 0:
                 torch.save(ddp_model.state_dict(), os.path.join(save_path, f"Iter_{epoch}_{model_name}.pt"))

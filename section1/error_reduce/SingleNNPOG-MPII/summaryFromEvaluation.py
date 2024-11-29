@@ -8,7 +8,7 @@ import pandas as pd
 from scipy import stats
 import os
 
-log_path = "/home/hi/zhuzi/paper-code/section2/MobileGaze_STE/evaluation/GazeCapture/GC数据集原始STE,loss加熵约束,scale0.02/cali_num_15_False_1e-07_12_1"
+log_path = "./evaluation/MPII/cali_num_72_False"
 data = []
 persons = os.listdir(log_path)
 
@@ -19,7 +19,6 @@ for person in persons:
     cali_res = os.path.join(cur_path, "calibration_test")
 
     # 读取 origin_error
-    # print(origin_res)
     with open(os.path.join(origin_res, "error.log"), "r") as f:
         origin_error = float(f.readlines()[-1].split(": ")[-1])
 

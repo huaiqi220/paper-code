@@ -337,7 +337,7 @@ def cali_test_func(root_path, label):
         f.write("2D Tensor:\n")
         for id in file_list:
             id = int(id)
-            line = STE.BinarizeSTEWithL2.apply(lines[id])
+            line = STE.BinarizeSTE_origin.apply(lines[id])
             # sigmoid_output = torch.sigmoid(lines[id])
             # binary_output = (sigmoid_output > 0.5).float()
             f.write(str(id) + " " + str(line) + '\n')

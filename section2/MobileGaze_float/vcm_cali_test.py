@@ -5,14 +5,16 @@ import random
 from dataloader import gc_reader
 from dataloader import mpii_reader
 import torch
-from model import dif_aff_net
+from model.CGES import mobile_gaze_2d as model
 from torch import nn
 import time
 import math
 import itertools
 from tqdm import tqdm
-# from model import STE
-# from util import testtools
+from model import STE
+from util import testtools
+
+
 
 
 def generate_binary_vectors(k):
@@ -24,52 +26,47 @@ def generate_binary_vectors(k):
 
 
 def dis(p1, p2):
-    return math.sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1]))
+    return math.sqrt((p1[0]-p2[0])*(p1[0]-p2[0]) + (p1[1]-p2[1])*(p1[1]-p2[1]))
 
 
-def test_func(name, testmodel, dataset, save_path, rank):
+def test_func(name, calimodel, dataset,save_path,rank,cali_test,cali_vec):
     # print(calimodel)
-    print("这次是原始测试")
-    save_path = os.path.join(save_path, "origin_test")
+
+    if cali_test:
+        print("这次是校准测试")
+        save_path = os.path.join(save_path,"calibration_test")
+    else:
+        print("这次是原始测试")
+        save_path = os.path.join(save_path,"origin_test")
     if not os.path.exists(save_path):
         os.makedirs(save_path)
-
+    
+    
     device = torch.device("cuda" + ":" + str(rank))
-    testmodel.to(device)
-    testmodel.eval()
+    calimodel.to(device)
+    calimodel.eval()
     total = 0
     count = 0
     with torch.no_grad():
         with open(os.path.join(save_path, "error.log"), 'w') as outfile:
             outfile.write("subjcet,name,x,y,labelx,labely,error\n")
             for j, data in enumerate(dataset):
-                data1 = data[0]
-                data2 = data[1]
-                labels = data[2]
-                data1["face"] = data1["face"].to(device)
-                data1["left"] = data1["left"].to(device)
-                data1["right"] = data1["right"].to(device)
-                data1["grid"] = data1["grid"].to(device)
-                data1["rects"] = data1["rects"].to(device)
-                data1["label"] = data1["label"].to(device)
-                # data1["name"] = data1["name"].to(device)
-
-                data2["face"] = data2["face"].to(device)
-                data2["left"] = data2["left"].to(device)
-                data2["right"] = data2["right"].to(device)
-                data2["grid"] = data2["grid"].to(device)
-                data2["rects"] = data2["rects"].to(device)
-                data2["label"] = data2["label"].to(device)
-                # data2["name"] = data2["name"].to(device)
-
-                input1 = [data1["left"], data1["right"], data1["face"], data1["rects"]]
-                input2 = [data2["left"], data2["right"], data2["face"], data2["rects"]]
-                gazes = testmodel(input1, input2)
+                data["face"] = data["face"].to(device)
+                data["left"] = data["left"].to(device)
+                data["right"] = data["right"].to(device)
+                data["grid"] = data["grid"].to(device)
+                data["rects"] = data["rects"].to(device)
+                data["name"] = data["name"].to(device)
+                labels = data["label"]
+                if cali_test == False:
+                    '''全0'''
+                    cali_vec = torch.zeros(1,config.k).to(device)
+                else:    
+                    cali_vec = cali_vec.to(device)
+                gazes = calimodel(data["face"], data["left"], data["right"], data["grid"], data["name"],"inference",cali_vec)   
 
                 print(f'\r[Batch : {j}]', end='')
-                # print(f'gazes: {gazes.shape}')
                 for k, gaze in enumerate(gazes):
-                    # print(f'gaze: {gaze}')
                     gaze = gaze.cpu().detach()
                     count += 1
                     acc = dis(gaze, labels[k])
@@ -77,32 +74,34 @@ def test_func(name, testmodel, dataset, save_path, rank):
                     gaze = [str(u) for u in gaze.numpy()]
                     label = [str(u) for u in labels.numpy()[k]]
                     log = [name] + gaze + label + [str(acc)]
-
+                    
                     outfile.write(",".join(log) + "\n")
-            loger = f"[{name}] Total Num: {count}, avg: {total / count} \n"
+            loger = f"[{name}] Total Num: {count}, avg: {total/count} \n"
             outfile.write(loger)
             print(loger)
 
 
-def float_cali_func(name, calimodel, dataset, save_path, rank):
+
+def float_cali_func(name,calimodel,dataset,save_path,rank):
     # 这个函数用来做浮点型校准向量，用于对比浮点类型与二进制类型
     #   校准向量的性能差异
     # 返回校准好的模型和校准参数
     device = torch.device("cuda" + ":" + str(rank))
     calimodel.to(device)
     calimodel.train()
+    
 
     # 所有参数全部固定。
     for param in calimodel.parameters():
-        param.requires_grad = False
-
+        param.requires_grad = False  
+    
     loss_func = nn.MSELoss()
     lr = config.cali_lr
 
-    # cali_vec = torch.randn(1, config.k,requires_grad=True).to(device)
-    cali_vec = torch.randn(1, config.k, device=device, requires_grad=True)
+    cali_vec = torch.zeros(1, config.k, device=device, requires_grad=True)
     optimizer = torch.optim.Adam([cali_vec], lr=lr)
-    save_path = os.path.join(save_path, "train_log")
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.7)
+    save_path = os.path.join(save_path,"train_log")
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     length = len(dataset)
@@ -111,32 +110,32 @@ def float_cali_func(name, calimodel, dataset, save_path, rank):
             time_begin = time.time()
             for i, data in enumerate(dataset):
                 optimizer.zero_grad()
-                with torch.amp.autocast("cuda"):
-                    data["face"] = data["face"].to(device)
-                    data["left"] = data["left"].to(device)
-                    data["right"] = data["right"].to(device)
-                    data["grid"] = data["grid"].to(device)
-                    data["rects"] = data["rects"].to(device)
-                    data["label"] = data["label"].to(device)
-                    data["name"] = data["name"].to(device)
-                    # data["poglabel"] = data["poglabel"].to(device)
-                    gaze_out = calimodel(data["face"], data["left"], data["right"], data["grid"], data["name"],
-                                         "inference", cali_vec)
-                    loss = loss_func(gaze_out, data["label"])
+                data["face"] = data["face"].to(device)
+                data["left"] = data["left"].to(device)
+                data["right"] = data["right"].to(device)
+                data["grid"] = data["grid"].to(device)
+                data["rects"] = data["rects"].to(device)
+                data["label"] = data["label"].to(device)
+                data["name"] = data["name"].to(device)
+                gaze_out = calimodel(data["face"], data["left"], data["right"], data["grid"], data["name"],"inference",cali_vec)
+                loss = loss_func(gaze_out, data["label"])        
 
                 loss.backward()
                 optimizer.step()
+                # print("Gradients of cali_vec:", cali_vec.grad)
                 time_remain = (length - i - 1) * ((time.time() - time_begin) / (i + 1)) / 3600
                 epoch_time = (length - 1) * ((time.time() - time_begin) / (i + 1)) / 3600
                 time_remain_total = time_remain + epoch_time * (config.cali_epoch - epoch)
-                log = f"[{epoch}/{config.cali_epoch}]: [{i}/{length}] loss:{loss:.10f} lr:{lr} time:{time_remain:.2f}h total:{time_remain_total:.2f}h"
+                log = f"[{epoch}/{config.cali_epoch}]: [{i}/{length}] loss:{loss:.10f} lr:{optimizer.param_groups[0]['lr']} time:{time_remain:.2f}h total:{time_remain_total:.2f}h"
                 outfile.write(log + "\n")
                 print(log)
                 sys.stdout.flush()
                 outfile.flush()
+            scheduler.step()
     calimodel.cpu()
     cali_vec = cali_vec.cpu()
-    return calimodel, cali_vec
+    return calimodel,cali_vec           
+
 
 
 def binary_cali_func(name, calimodel, dataset, save_path, rank):
@@ -186,17 +185,18 @@ def binary_cali_func(name, calimodel, dataset, save_path, rank):
         for vec in tqdm(binary_tensors, desc="Binary Calibration Compute"):
             cur_vec = vec.to(device)
             cur_vec = cur_vec.expand(gaze_feature.shape[0], -1)
-            gazes = calimodel.computeGaze(cur_vec, gaze_feature)
+            gazes = calimodel.computeGaze(cur_vec,gaze_feature)
 
             total = 0
             count = 0
 
             for k, gaze in enumerate(gazes):
-                # print(f'gaze: {gaze}')
+                #print(f'gaze: {gaze}')
                 gaze = gaze.cpu().detach()
                 count += 1
                 acc = dis(gaze, gaze_labels[k])
                 total += acc
+
 
             avg_error = total / count
 
@@ -211,42 +211,75 @@ def binary_cali_func(name, calimodel, dataset, save_path, rank):
     return min_vec
 
 
+
 def cali_test_func(root_path, label):
     rank = config.cur_rank
+    k = config.k
     cur_id = label.split("/")[-1].split(".")[0]
-    cali_folder = os.path.join(config.test_save_path, config.cur_dataset, config.commit,
-                                config.model_name, cur_id)
+    cali_folder = os.path.join(config.test_save_path,config.cur_dataset,config.commit, "cali_num_" + str(config.cali_image_num)  + "_" + str(config.cali_lr) + "_" + str(config.k), cur_id)
 
+    all_label = []
     with open(label, "r") as f:
         all_label = f.readlines()
         all_label.pop(0)
-
-    # 部分用户采集图片很少
-
-    if len(all_label) < 10 or len(all_label) < 10:
-        print("该用户数据较少，跳过测试")
-        return
-
     if config.cur_dataset == "GazeCapture":
-        all_test_dataset = gc_reader.calitxtload(all_label, os.path.join(root_path, "Image"), config.cali_batch_size,
-                                                 True, 8, True)
+        selected_cali_lines, remaining_lines =  testtools.select_by_quadrants_gc(all_label,int(config.cali_image_num / 4) + 1)
+    elif config.cur_dataset == "MPII":
+        selected_cali_lines, remaining_lines = testtools.select_by_quadrants_mpii(all_label,
+                                                                                int(config.cali_image_num / 4) + 1)
 
+    if len(remaining_lines) < 10  or  len(selected_cali_lines) < 8:
+        print("该用户数据较少，跳过测试")
+        return 
+    
+    if config.cur_dataset == "GazeCapture":
+        all_test_dataset = gc_reader.calitxtload(all_label,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)
+        cali_train_dataset = gc_reader.calitxtload(selected_cali_lines,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)
+        cali_test_dataset = gc_reader.calitxtload(remaining_lines,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)
 
     if config.cur_dataset == "MPII":
-        all_test_dataset = mpii_reader.calitxtload(all_label, os.path.join(root_path, "Image"), config.cali_batch_size,
-                                                   True, 8, True)
+        all_test_dataset = mpii_reader.calitxtload(all_label,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)
+        cali_train_dataset = mpii_reader.calitxtload(selected_cali_lines,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)
+        cali_test_dataset = mpii_reader.calitxtload(remaining_lines,os.path.join(root_path,"Image"),config.cali_batch_size,True,8,True)
 
     test_model_path = config.test_model_path
-    testmodel = dif_aff_net.difaffnet()
+    calimodel = model(config.hm_size, config.k, 25 * 25)
     statedict = torch.load(test_model_path)
     new_state_dict = {}
     for key, value in statedict.items():
-        # 如果 key 以 "module." 开头，则去掉这个前缀
+    # 如果 key 以 "module." 开头，则去掉这个前缀
         new_key = key[7:]
         new_state_dict[new_key] = value
-    testmodel.load_state_dict(new_state_dict)
+    calimodel.load_state_dict(new_state_dict) 
+
+    # id_path = "/home/hi/zhuzi/data/GCOutput/Label/model_fineture/train"
+    # file_list = os.listdir(id_path)
+    # file_list = [file.split(".")[0] for file in file_list]
+    # lines = calimodel.cali_vectors
+    # with open("log.txt", "w") as f:
+    #     f.write("2D Tensor:\n")
+    #     for id in file_list:
+    #         id = int(id)
+    #         line = lines[id]
+    #         # sigmoid_output = torch.sigmoid(lines[id])
+    #         # binary_output = (sigmoid_output > 0.5).float()
+    #         f.write(str(id) + " " + str(line) + '\n')
+    #     # f.write(str())  # 将 Tensor 转为 numpy 数组并写入
+    #     f.write("\n")
+    # f.close()
+
+
     # 首先测试这个校准模型在校准数据集上的未校准性能
-    test_func(cur_id, testmodel, all_test_dataset, cali_folder, rank)
+    test_func(cur_id,calimodel,cali_test_dataset,cali_folder,rank,False,None)
+
+    if config.cali_vector_type == "float32":
+        calimodel,cali_vec = float_cali_func("name",calimodel,cali_train_dataset,cali_folder,rank)
+    else:
+        cali_vec = binary_cali_func("name",calimodel,cali_train_dataset,cali_folder,rank)
+
+    # 测试计算好的函数
+    print(cali_vec)
+    test_func(cur_id,calimodel,cali_test_dataset,cali_folder,rank,True,cali_vec)
 
 
 # 主函数
@@ -256,12 +289,9 @@ if __name__ == "__main__":
     elif config.cur_dataset == "MPII":
         root_path = config.MPIIFaceGaze_root
 
-
-    # test_label_path = os.path.join(root_path, "Label", "K_Fold_diff","diflabel", config.cur_k,"test")
-
-    test_label_path = os.path.join(root_path, "Label", "diflabel", "test")
+    test_label_path = os.path.join(root_path,"Label","model_fineture", "test")
     label_list = [os.path.join(test_label_path, item) for item in os.listdir(test_label_path)]
     for label in tqdm(label_list):
         res = cali_test_func(root_path, label)
-    # binary_cali_func(None,None,None,None,None)
 
+    

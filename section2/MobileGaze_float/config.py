@@ -1,20 +1,9 @@
 
 
-commit = "GC数据集原始版本STE，不加loss"
-
-''' super params '''
-k = 12
+commit = "GC数据集浮点数类型校准向量第二次实验、已经修改fc"
 
 
-'''
-1 原始版本STE，不加loss约束
-2 原始版本STE，加loss熵鼓励
-3 tanh模拟软STE
-4 梯度约束STE，不加loss
-5 梯度约束STE，加loss约束
-6 原始版本STE，加loss约束
-'''
-current = 1
+
 
 
 '''Heatmap params'''
@@ -55,29 +44,35 @@ test_save_path = "./evaluation"
 
 '''test params'''
 
-test_model_path = "/home/hi/zhuzi/paper-code/section2/MobileGaze_STE/checkpoint/GazeCapture/GC数据集梯度约束STE，加loss处理前后约束，scale0.02/128_14_0.001_1/Iter_14_MobileNetV2-Gaze-PoG.pt"
+''' super params '''
+k = 12
+
+test_model_path = "/home/hi/zhuzi/paper-code/section2/MobileGaze_float/checkpoint/GazeCapture/GC数据集浮点数类型校准向量第二次实验、已经修改fc/128_14_0.001_12/Iter_10_MobileNetV2-Gaze-PoG.pt"
 test_begin_step = 26
 test_end_step = 32
 test_steps = 2
 test_log_path = "./log"
+cur_rank = 3
+
+
 
 
 
 '''Personal Cali Train && Test Params'''
 cali_batch_size = 8
-cali_epoch = 20
-cali_lr = 1e-7
-cali_last_layer = False
+cali_epoch = 50
+cali_lr = 1e-3
 '''
 float32
 binary
 '''
-cali_vector_type = "binary"
+cali_vector_type = "float32"
 
 # k =  4 * c
-cali_image_num = 15
+cali_image_num = 24
 
-cur_rank = 2
+
+
 
 
 

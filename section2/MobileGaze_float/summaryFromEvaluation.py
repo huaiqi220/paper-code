@@ -8,7 +8,7 @@ import pandas as pd
 from scipy import stats
 import os
 
-log_path = "/home/hi/zhuzi/paper-code/section2/MobileGaze_float/evaluation/GazeCapture/GC数据集浮点数类型校准向量实验/cali_num_100_1e-06_10"
+log_path = "/home/hi/zhuzi/paper-code/section2/MobileGaze_STE/evaluation/GazeCapture/GC数据集原始STE,loss加熵约束,scale0.02/cali_num_15_False_1e-07_12_1"
 data = []
 persons = os.listdir(log_path)
 
@@ -16,34 +16,34 @@ persons = os.listdir(log_path)
 for person in persons:
     cur_path = os.path.join(log_path, person)
     origin_res = os.path.join(cur_path, "origin_test")
-    # cali_res = os.path.join(cur_path, "calibration_test")
+    cali_res = os.path.join(cur_path, "calibration_test")
 
     # 读取 origin_error
-    print(origin_res)
+    # print(origin_res)
     with open(os.path.join(origin_res, "error.log"), "r") as f:
         origin_error = float(f.readlines()[-1].split(": ")[-1])
 
     # 读取 cali_error
-    # with open(os.path.join(cali_res, "error.log"), "r") as f:
-    #     cali_error = float(f.readlines()[-1].split(": ")[-1])
+    with open(os.path.join(cali_res, "error.log"), "r") as f:
+        cali_error = float(f.readlines()[-1].split(": ")[-1])
 
-    data.append([person, origin_error])
+    data.append([person, origin_error, cali_error])
 
 # 转换数据为DataFrame
-df = pd.DataFrame(data, columns=['Person', 'Origin_Error'])
+df = pd.DataFrame(data, columns=['Person', 'Origin_Error', 'Cali_Error'])
 
 # 计算 origin_error 和 cali_error 的平均值和标准差
 origin_mean = df['Origin_Error'].mean()
-# cali_mean = df['Cali_Error'].mean()
+cali_mean = df['Cali_Error'].mean()
 origin_std = df['Origin_Error'].std()
-# cali_std = df['Cali_Error'].std()
+cali_std = df['Cali_Error'].std()
 
 # 计算 p 值（配对 t 检验）
-# t_stat, p_value = stats.ttest_rel(df['Origin_Error'], df['Cali_Error'])
+t_stat, p_value = stats.ttest_rel(df['Origin_Error'], df['Cali_Error'])
 
 # 打印结果
 print("原始误差 (Origin_Error) 的平均值:", origin_mean)
-# print("校准误差 (Cali_Error) 的平均值:", cali_mean)
+print("校准误差 (Cali_Error) 的平均值:", cali_mean)
 print("原始误差 (Origin_Error) 的标准差:", origin_std)
-# print("校准误差 (Cali_Error) 的标准差:", cali_std)
-# print("校准前后误差的 p 值:", p_value)
+print("校准误差 (Cali_Error) 的标准差:", cali_std)
+print("校准前后误差的 p 值:", p_value)

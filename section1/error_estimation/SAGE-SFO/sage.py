@@ -16,7 +16,7 @@ class SAGE_Backbone(nn.Module):
         )
 
         self.landmark_fc = nn.Sequential(
-            nn.Linear(8, 100),
+            nn.Linear(12, 100),
             nn.ReLU(),
             nn.Linear(100, 16),
             nn.ReLU(),
@@ -105,14 +105,11 @@ class SAGE_SFO(nn.Module):
         direction_outputs = torch.stack(direction_outputs, dim=1)  # Shape: [batch_size, k, 4]
         
         combined_features = torch.cat((Xqf, calibration_features.view(Xqf.size(0), -1), direction_outputs.view(Xqf.size(0), -1)), dim=1)
-        print(combined_features.shape)
-        print(calibration_features.view(Xqf.size(0), -1).shape)
-        print(direction_outputs.view(Xqf.size(0), -1).shape)
         gaze_prediction = self.final_regression(combined_features)
         return gaze_prediction, direction_outputs
     
 
-def sage_sfo_loss(gaze, direction, lgaze, ldirection, calibration_data, lambda_weight=1.0):
+def sage_sfo_loss(gaze, direction, lgaze, ldirection, lambda_weight=1.0):
     """
     实现包含 gaze 和 direction 的损失函数。
 
@@ -132,7 +129,7 @@ def sage_sfo_loss(gaze, direction, lgaze, ldirection, calibration_data, lambda_w
     gaze_loss = torch.mean(torch.norm(gaze_diff, dim=1) ** 2)  # L2 损失
 
     # 计算方向分类损失（交叉熵）
-    K = calibration_data.size(1)
+    K = ldirection.size(1)
     batch_size = gaze.size(0)
     
     # Reshape ldirection to match the prediction dimension
